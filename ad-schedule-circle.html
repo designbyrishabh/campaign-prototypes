@@ -315,11 +315,11 @@
     background: color-mix(in srgb, var(--red)   calc(var(--strength, 1) * 100%), #ffffff);
     border: none;
   }
-  /* Visually muted, dashed outline pill in Schedule mode = "info, not editable here". */
-  .mode-schedule .adj-outline {
-    border-style: dashed;
-    opacity: 0.85;
-  }
+  /* In Schedule mode we don't show the outline pill or percent badge — the
+     adjustment is communicated solely by the dot color. The user can switch to
+     Adjust Bid to see the grouped pill + the exact % for each run. */
+  .mode-schedule .adj-outline,
+  .mode-schedule .pct-badge { display: none; }
 
   /* Adjust mode: active hours show light purple, inactive same outline */
   .mode-adjust .cell.on .dot {
