@@ -304,6 +304,22 @@
     background: transparent;
     border: 1.2px solid #d9d9d9;
   }
+  /* In Schedule mode, hours that have a bid adjustment carry the adjustment color
+     too — but only to communicate state. The adjustment can't be edited from this
+     tab; the user has to switch to Adjust Bid to change it. */
+  .mode-schedule .cell.adj-inc .dot {
+    background: color-mix(in srgb, var(--green) calc(var(--strength, 1) * 100%), #ffffff);
+    border: none;
+  }
+  .mode-schedule .cell.adj-dec .dot {
+    background: color-mix(in srgb, var(--red)   calc(var(--strength, 1) * 100%), #ffffff);
+    border: none;
+  }
+  /* Visually muted, dashed outline pill in Schedule mode = "info, not editable here". */
+  .mode-schedule .adj-outline {
+    border-style: dashed;
+    opacity: 0.85;
+  }
 
   /* Adjust mode: active hours show light purple, inactive same outline */
   .mode-adjust .cell.on .dot {
@@ -412,6 +428,9 @@
   .legend.mode-schedule .qualifier         { display: none; }
   .legend.mode-adjust   .legend-dot.active { background: var(--brand-circle); }
   .legend.mode-schedule .legend-dot.active { background: var(--brand); }
+  /* When Schedule mode has read-only adjustments visible, re-show the inc/dec
+     legend entries so the colors are explained. */
+  .legend.mode-schedule.has-adjustments .adjust-only { display: inline-flex; }
   .legend-item {
     display: inline-flex;
     align-items: center;
@@ -840,6 +859,7 @@
 
     legendEl.classList.toggle("mode-schedule", mode === "schedule");
     legendEl.classList.toggle("mode-adjust",   mode === "adjust");
+    // (we set has-adjustments below once we know whether any exist)
 
     modeScheduleBtn.classList.toggle("active", mode === "schedule");
     modeAdjustBtn.classList.toggle("active",   mode === "adjust");
@@ -866,6 +886,9 @@
       if (a.dir === "inc" && a.pct > maxInc) maxInc = a.pct;
       if (a.dir === "dec" && a.pct > maxDec) maxDec = a.pct;
     }
+    // Reveal the inc/dec legend entries even in Schedule mode if any exist,
+    // so the colors users now see in this tab are explained.
+    legendEl.classList.toggle("has-adjustments", maxInc > 0 || maxDec > 0);
 
     // Map a percent to a 0..1 strength relative to the current max in that direction.
     // Floor at 0.65 so even the smallest adjustment renders as a clearly-saturated
@@ -886,7 +909,10 @@
       const active = base[d][h];
       if (active) cell.classList.add("on"); else cell.classList.add("off");
 
-      if (mode === "adjust" && active) {
+      // Adjustments paint the cell color in BOTH modes — in Adjust Bid you can
+      // edit them, in Schedule they're shown as read-only context so the user
+      // can see where bid adjustments exist without having to flip tabs.
+      if (active) {
         const a = adj[d][h];
         if (a.dir === "inc") {
           cell.classList.add("adj-inc");
@@ -902,7 +928,8 @@
     // Step 2: merge consecutive-day runs that have the *same* hStart/hEnd/dir/pct
     // into a single rectangular block. Step 3: draw one outline + one badge per
     // block so vertical drags read as a single shape instead of stacked rows.
-    if (mode === "adjust") {
+    // We do this in BOTH modes — in Schedule mode the pills are styled as read-only.
+    {
       const runs = [];        // { d, hStart, hEnd, dir, pct }
       for (let d=0; d<DAYS.length; d++){
         let runStart = -1, runDir = null, runPct = 0;
