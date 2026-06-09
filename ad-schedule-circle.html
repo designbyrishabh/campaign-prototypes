@@ -335,14 +335,18 @@
     transform: scale(1.08);
   }
 
-  /* Selection (drag) in adjust mode */
+  /* Selection (drag) in adjust mode — outlined "marching" pill that hugs the dots */
   .selection-box {
     position: absolute;
     border: 2px solid var(--brand);
-    background: rgba(132, 95, 255, 0.08);
+    outline: 1px solid #fff;            /* white halo separating the outline from dots underneath */
+    outline-offset: -3px;
+    background: rgba(132, 95, 255, 0.10);
+    box-shadow:
+      0 0 0 1px rgba(132, 95, 255, 0.35),    /* sharp 1px ring just outside the main border */
+      0 8px 20px rgba(132, 95, 255, 0.15);   /* soft drop shadow for elevation */
     pointer-events: none;
     z-index: 2;
-    box-shadow: 0 0 0 4px rgba(132, 95, 255, 0.06);
     transition: border-radius .08s linear;
   }
   .selection-box.single-row { border-radius: 999px; }
