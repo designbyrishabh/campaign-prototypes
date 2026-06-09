@@ -60,6 +60,13 @@
   }
 
   /* Header */
+  .head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .head .title-block { min-width: 0; flex: 1; }
   .head .title {
     font-size: 16px;
     font-weight: 600;
@@ -71,6 +78,64 @@
     line-height: 20px;
     color: var(--text-sec);
     margin: 0;
+  }
+  .head-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .reset-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 0;
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: var(--text-sec);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .reset-link:hover {
+    background: #f5f5f5;
+    color: var(--text);
+  }
+  .reset-link[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .reset-link svg { width: 14px; height: 14px; }
+
+  /* Save status (auto-save indicator) */
+  .save-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-sec);
+    line-height: 1;
+    transition: color .2s;
+    white-space: nowrap;
+  }
+  .save-status .ss-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #16a34a;
+    transition: background .2s;
+  }
+  .save-status.saving { color: var(--text-ter); }
+  .save-status.saving .ss-dot { background: #d4a017; animation: pulse 1s infinite; }
+  .save-status.saved  { color: var(--text-sec); }
+  .save-status.saved  .ss-dot { background: #16a34a; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
   }
 
   /* Segmented toggle */
@@ -496,8 +561,25 @@
       <div class="card-body">
         <!-- Header -->
         <div class="head">
-          <h3 class="title">Bid Adjustments</h3>
-          <p class="sub" id="sub">Tap hours to opt them out. Switch to Edit Bid to fine-tune the bid for scheduled hours.</p>
+          <div class="title-block">
+            <h3 class="title">Bid Adjustments</h3>
+            <p class="sub" id="sub">Tap hours to opt them out. Switch to Edit Bid to fine-tune the bid for scheduled hours.</p>
+          </div>
+          <div class="head-actions">
+            <span class="save-status saved" id="status" aria-live="polite">
+              <span class="ss-dot"></span>
+              <span id="status-text">All changes saved</span>
+            </span>
+            <button class="reset-link" id="reset" disabled title="Restore to all hours active">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M3.33 10A6.67 6.67 0 0 1 15 5.43" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16.67 10A6.67 6.67 0 0 1 5 14.57" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M15.5 3v2.5H13"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4.5 17v-2.5H7"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Reset
+            </button>
+          </div>
         </div>
 
         <!-- Mode toggle -->
@@ -527,22 +609,6 @@
         </div>
       </div>
 
-      <!-- Save footer -->
-      <div class="foot">
-        <div class="btn-actions">
-          <button class="btn btn-primary" id="save" disabled>Save Changes</button>
-          <button class="btn btn-secondary" id="reset">
-            <svg class="ic-refresh" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path d="M3.33 10A6.67 6.67 0 0 1 15 5.43" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M16.67 10A6.67 6.67 0 0 1 5 14.57" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M15.5 3v2.5H13"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M4.5 17v-2.5H7"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Reset
-          </button>
-        </div>
-        <div class="status" id="status">No changes yet</div>
-      </div>
     </section>
   </div>
 
@@ -558,9 +624,9 @@
   const axis  = document.getElementById("axis");
   const sub   = document.getElementById("sub");
   const tipText = document.getElementById("tip-text");
-  const saveBtn = document.getElementById("save");
   const resetBtn = document.getElementById("reset");
   const statusEl = document.getElementById("status");
+  const statusTextEl = document.getElementById("status-text");
   const modeScheduleBtn = document.getElementById("mode-schedule");
   const modeAdjustBtn = document.getElementById("mode-adjust");
   const popupLayer = document.getElementById("popup-layer");
@@ -720,19 +786,61 @@
       }
     }
 
-    // Footer status
+    // Reset is enabled whenever the live state differs from the initial state.
+    const canReset = !gridsEqual(base, baseInitial) || !adjEqual(adj, adjInitial);
+    resetBtn.disabled = !canReset;
+
+    // If the live state differs from what we've persisted, schedule an auto-save.
     const dirty = !gridsEqual(base, baseSaved) || !adjEqual(adj, adjSaved);
-    saveBtn.disabled = !dirty;
-    if (!dirty) {
-      statusEl.textContent = "No changes yet";
-      statusEl.classList.remove("changed");
-    } else {
-      const parts = [];
-      if (!gridsEqual(base, baseSaved)) parts.push("Schedule edited");
-      if (!adjEqual(adj, adjSaved))     parts.push("Bid adjustments edited");
-      statusEl.textContent = "Unsaved · " + parts.join(" + ");
-      statusEl.classList.add("changed");
-    }
+    if (dirty) scheduleAutoSave();
+  }
+
+  // ---- Auto-save ----
+  // Debounce so a burst of edits (drag, popup apply) collapses into one save.
+  let saveTimer = null;
+  let lastSavedAt = null;
+  let relativeTimer = null;
+
+  function scheduleAutoSave(){
+    setStatus("saving", "Saving…");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(commitAutoSave, 400);
+  }
+
+  function commitAutoSave(){
+    // In a real app this is where you'd POST to the backend. Here we just snapshot.
+    baseSaved = clone(base);
+    adjSaved  = cloneAdj(adj);
+    lastSavedAt = Date.now();
+    setStatus("saved", "Saved · just now");
+    startRelativeTicker();
+  }
+
+  function setStatus(kind, text){
+    statusEl.classList.remove("saving","saved");
+    statusEl.classList.add(kind);
+    statusTextEl.textContent = text;
+  }
+
+  function startRelativeTicker(){
+    clearInterval(relativeTimer);
+    relativeTimer = setInterval(() => {
+      if (!lastSavedAt) return;
+      // Stop refreshing if we're not in saved state any more.
+      if (!statusEl.classList.contains("saved")) return;
+      statusTextEl.textContent = "Saved · " + relativeTime(lastSavedAt);
+    }, 15000);
+  }
+
+  function relativeTime(t){
+    const sec = Math.max(0, Math.floor((Date.now() - t) / 1000));
+    if (sec < 10)       return "just now";
+    if (sec < 60)       return sec + "s ago";
+    const min = Math.floor(sec / 60);
+    if (min < 60)       return min + " min ago";
+    const hr = Math.floor(min / 60);
+    if (hr < 24)        return hr + " hr ago";
+    return Math.floor(hr / 24) + " d ago";
   }
 
   function placeBadge(d, hStart, hEnd, dir, pct){
@@ -1036,30 +1144,13 @@
   modeScheduleBtn.addEventListener("click", () => { mode = "schedule"; closePopup(); render(); });
   modeAdjustBtn.addEventListener("click",   () => { mode = "adjust";   closePopup(); render(); });
 
-  saveBtn.addEventListener("click", () => {
-    if (saveBtn.disabled) return;
-    baseSaved = clone(base);
-    adjSaved  = cloneAdj(adj);
-    render();
-    pulseStatus("Saved");
-  });
-
   resetBtn.addEventListener("click", () => {
+    if (resetBtn.disabled) return;
     base = clone(baseInitial);
     adj  = cloneAdj(adjInitial);
     closePopup();
     render();
   });
-
-  function pulseStatus(msg){
-    statusEl.textContent = msg;
-    statusEl.classList.remove("changed");
-    statusEl.style.color = "var(--green)";
-    setTimeout(() => {
-      statusEl.style.color = "";
-      render();
-    }, 1200);
-  }
 
   // ---- Init ----
   // Default: every hour is selected. User only deselects from here.
