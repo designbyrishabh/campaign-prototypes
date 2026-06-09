@@ -313,10 +313,18 @@
     background: transparent;
     border: 1.2px solid #d9d9d9;
   }
-  .mode-adjust .cell.adj-inc.full .dot   { background: var(--green); }
-  .mode-adjust .cell.adj-inc.partial .dot { background: var(--green-soft); }
-  .mode-adjust .cell.adj-dec.full .dot   { background: var(--red); }
-  .mode-adjust .cell.adj-dec.partial .dot { background: var(--red-soft); }
+  /* Increase / Decrease intensity scales with --strength (0..1) relative to the
+     largest adjustment currently on the grid. Below 40% strength we floor it so
+     even small adjustments are still legible. Uses color-mix between white and
+     the brand green/red so 0% → almost white, 100% → full saturation. */
+  .mode-adjust .cell.adj-inc .dot {
+    background: color-mix(in srgb, var(--green) calc(var(--strength, 1) * 100%), #ffffff);
+    border: none;
+  }
+  .mode-adjust .cell.adj-dec .dot {
+    background: color-mix(in srgb, var(--red)   calc(var(--strength, 1) * 100%), #ffffff);
+    border: none;
+  }
 
   /* Hover */
   .mode-schedule .cell:hover .dot {
@@ -344,7 +352,7 @@
   .pct-badge {
     position: absolute;
     transform: translate(-50%, -130%);
-    background: var(--green);
+    background: color-mix(in srgb, var(--green) calc(var(--strength, 1) * 100%), #ffffff);
     color: #fff;
     font-size: 11px;
     font-weight: 600;
@@ -355,7 +363,9 @@
     pointer-events: none;
     white-space: nowrap;
   }
-  .pct-badge.dec { background: var(--red); }
+  .pct-badge.dec {
+    background: color-mix(in srgb, var(--red) calc(var(--strength, 1) * 100%), #ffffff);
+  }
   .pct-badge::after {
     content: "";
     position: absolute;
@@ -774,19 +784,41 @@
     // Remove all percent badges (rebuild)
     grid.querySelectorAll(".pct-badge").forEach(el => el.remove());
 
+    // Find current max increase / decrease so we can scale every adjustment
+    // relative to the largest one on the grid.
+    let maxInc = 0, maxDec = 0;
+    for (let d=0; d<DAYS.length; d++) for (let h=0; h<HOURS; h++) {
+      if (!base[d][h]) continue;
+      const a = adj[d][h];
+      if (a.dir === "inc" && a.pct > maxInc) maxInc = a.pct;
+      if (a.dir === "dec" && a.pct > maxDec) maxDec = a.pct;
+    }
+
+    // Map a percent to a 0..1 strength relative to the current max in that direction.
+    // Floor at 0.35 so the smallest adjustment is still visible against active cells.
+    const STRENGTH_FLOOR = 0.35;
+    function strengthFor(pct, max){
+      if (!max) return 1;
+      const raw = pct / max;
+      return STRENGTH_FLOOR + (1 - STRENGTH_FLOOR) * raw;
+    }
+
     const cells = grid.querySelectorAll(".cell");
     cells.forEach(cell => {
       const d = +cell.dataset.day, h = +cell.dataset.hour;
-      cell.classList.remove("on","off","adj-inc","adj-dec","full","partial");
+      cell.classList.remove("on","off","adj-inc","adj-dec");
+      cell.style.removeProperty("--strength");
       const active = base[d][h];
       if (active) cell.classList.add("on"); else cell.classList.add("off");
 
       if (mode === "adjust" && active) {
         const a = adj[d][h];
         if (a.dir === "inc") {
-          cell.classList.add("adj-inc", a.pct >= 10 ? "full" : "partial");
+          cell.classList.add("adj-inc");
+          cell.style.setProperty("--strength", strengthFor(a.pct, maxInc));
         } else if (a.dir === "dec") {
-          cell.classList.add("adj-dec", a.pct >= 5 ? "full" : "partial");
+          cell.classList.add("adj-dec");
+          cell.style.setProperty("--strength", strengthFor(a.pct, maxDec));
         }
       }
     });
@@ -800,7 +832,8 @@
           const sameAsRun = runDir && cur.dir === runDir && cur.pct === runPct && base[d][h];
           if (!sameAsRun){
             if (runDir && runStart >= 0) {
-              placeBadge(d, runStart, h-1, runDir, runPct);
+              const s = strengthFor(runPct, runDir === "inc" ? maxInc : maxDec);
+              placeBadge(d, runStart, h-1, runDir, runPct, s);
             }
             runStart = (cur.dir && base[d][h]) ? h : -1;
             runDir = (cur.dir && base[d][h]) ? cur.dir : null;
@@ -867,7 +900,7 @@
     return Math.floor(hr / 24) + " d ago";
   }
 
-  function placeBadge(d, hStart, hEnd, dir, pct){
+  function placeBadge(d, hStart, hEnd, dir, pct, strength){
     const midH = (hStart + hEnd) / 2;
     const row = grid.querySelector(`.row[data-day="${d}"]`);
     if (!row) return;
@@ -876,6 +909,7 @@
     badge.textContent = (dir === "inc" ? "+" : "-") + pct + "%";
     badge.style.left = hourCenter(midH) + "px";
     badge.style.top  = "8px";
+    if (strength != null) badge.style.setProperty("--strength", strength);
     row.appendChild(badge);
   }
 
