@@ -379,8 +379,9 @@
   /* Legend */
   .legend {
     display: flex;
-    gap: 24px;
+    gap: 20px;
     flex-wrap: wrap;
+    align-items: center;
   }
   .legend-item {
     display: inline-flex;
@@ -394,13 +395,36 @@
     width: 12px;
     height: 12px;
     border-radius: 999px;
-    background: var(--brand);
+    background: var(--brand-circle);
+    flex-shrink: 0;
   }
-  .legend-dot.inc { background: var(--green); }
-  .legend-dot.dec { background: var(--red); }
   .legend-dot.inactive {
     background: transparent;
     border: 1.2px solid #d9d9d9;
+  }
+  /* Gradient swatch for the scaled Increase / Decrease legend entries */
+  .legend-scale {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .legend-scale .ld {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .legend-scale.inc .ld.s1 { background: color-mix(in srgb, var(--green) 40%, #fff); }
+  .legend-scale.inc .ld.s2 { background: color-mix(in srgb, var(--green) 70%, #fff); }
+  .legend-scale.inc .ld.s3 { background: var(--green); }
+  .legend-scale.dec .ld.s1 { background: color-mix(in srgb, var(--red) 40%, #fff); }
+  .legend-scale.dec .ld.s2 { background: color-mix(in srgb, var(--red) 70%, #fff); }
+  .legend-scale.dec .ld.s3 { background: var(--red); }
+  .legend-scale .scale-label {
+    margin-left: 4px;
+    color: var(--text-ter);
+    font-size: 11px;
+    font-weight: 500;
   }
 
   /* Footer */
@@ -629,10 +653,26 @@
         <!-- Bottom bar: legend (start) + save status + reset (end) -->
         <div class="bottom-bar">
           <div class="legend">
-            <div class="legend-item"><span class="legend-dot"></span>Active (Regular bid)</div>
-            <div class="legend-item"><span class="legend-dot inc"></span>Increased</div>
-            <div class="legend-item"><span class="legend-dot dec"></span>Decreased</div>
-            <div class="legend-item"><span class="legend-dot inactive"></span>Inactive</div>
+            <div class="legend-item">
+              <span class="legend-dot"></span>Active (Regular bid)
+            </div>
+            <div class="legend-item">
+              <span class="legend-scale inc" aria-hidden="true">
+                <span class="ld s1"></span><span class="ld s2"></span><span class="ld s3"></span>
+              </span>
+              Increased
+              <span class="scale-label">lower → higher %</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-scale dec" aria-hidden="true">
+                <span class="ld s1"></span><span class="ld s2"></span><span class="ld s3"></span>
+              </span>
+              Decreased
+              <span class="scale-label">lower → higher %</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot inactive"></span>Inactive
+            </div>
           </div>
           <div class="end">
             <span class="save-status saved" id="status" aria-live="polite">
