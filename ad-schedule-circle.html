@@ -352,6 +352,26 @@
   .selection-box.single-row { border-radius: 999px; }
   .selection-box.multi-row  { border-radius: 18px; }
 
+  /* Persistent outline pill around an adjusted run — sits behind the dots so they
+     stay clickable. Color + fill intensity scale with --strength (0..1) just like
+     the dots themselves do. */
+  .adj-outline {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: 999px;
+    border: 1.5px solid transparent;
+    transition: background-color .12s, border-color .12s;
+  }
+  .adj-outline.inc {
+    border-color: color-mix(in srgb, var(--green) calc(var(--strength, 1) * 80%), transparent);
+    background:   color-mix(in srgb, var(--green) calc(var(--strength, 1) * 14%), #ffffff);
+  }
+  .adj-outline.dec {
+    border-color: color-mix(in srgb, var(--red)   calc(var(--strength, 1) * 80%), transparent);
+    background:   color-mix(in srgb, var(--red)   calc(var(--strength, 1) * 14%), #ffffff);
+  }
+
   /* Badge for percent */
   .pct-badge {
     position: absolute;
@@ -834,8 +854,8 @@
       tipText.textContent = "Tip · Drag across hours to select a range, then choose Increase or Decrease Bid.";
     }
 
-    // Remove all percent badges (rebuild)
-    grid.querySelectorAll(".pct-badge").forEach(el => el.remove());
+    // Remove all percent badges + outline pills (rebuild)
+    grid.querySelectorAll(".pct-badge, .adj-outline").forEach(el => el.remove());
 
     // Find current max increase / decrease so we can scale every adjustment
     // relative to the largest one on the grid.
@@ -876,7 +896,8 @@
       }
     });
 
-    // Place percent badges (one per contiguous run of same dir/pct within a day, anchored at run end)
+    // For each day, walk contiguous runs of (same dir, same pct) and draw both
+    // the outline pill around the run AND a percent badge above it.
     if (mode === "adjust") {
       for (let d=0; d<DAYS.length; d++){
         let runStart = -1, runDir = null, runPct = 0;
@@ -886,6 +907,7 @@
           if (!sameAsRun){
             if (runDir && runStart >= 0) {
               const s = strengthFor(runPct, runDir === "inc" ? maxInc : maxDec);
+              placeOutline(d, runStart, h-1, runDir, s);
               placeBadge(d, runStart, h-1, runDir, runPct, s);
             }
             runStart = (cur.dir && base[d][h]) ? h : -1;
@@ -951,6 +973,33 @@
     const hr = Math.floor(min / 60);
     if (hr < 24)        return hr + " hr ago";
     return Math.floor(hr / 24) + " d ago";
+  }
+
+  function placeOutline(d, hStart, hEnd, dir, strength){
+    const row = grid.querySelector(`.row[data-day="${d}"]`);
+    if (!row) return;
+    const first = row.querySelector(`.cell[data-hour="${hStart}"] .dot`);
+    const last  = row.querySelector(`.cell[data-hour="${hEnd}"] .dot`);
+    if (!first || !last) return;
+    const a = first.getBoundingClientRect();
+    const b = last.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+
+    // Symmetric breathing room around the dots
+    const PAD_X = 8, PAD_Y = 6;
+    const left = Math.min(a.left, b.left) - rowRect.left - PAD_X;
+    const right = Math.max(a.right, b.right) - rowRect.left + PAD_X;
+    const top = Math.min(a.top, b.top) - rowRect.top - PAD_Y;
+    const bottom = Math.max(a.bottom, b.bottom) - rowRect.top + PAD_Y;
+
+    const pill = document.createElement("div");
+    pill.className = "adj-outline " + (dir === "inc" ? "inc" : "dec");
+    pill.style.left = left + "px";
+    pill.style.top = top + "px";
+    pill.style.width = (right - left) + "px";
+    pill.style.height = (bottom - top) + "px";
+    if (strength != null) pill.style.setProperty("--strength", strength);
+    row.appendChild(pill);
   }
 
   function placeBadge(d, hStart, hEnd, dir, pct, strength){
