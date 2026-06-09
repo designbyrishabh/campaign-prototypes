@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ad Schedule · Bid Adjustments</title>
+<style>
+  :root {
+    --brand: #845fff;
+    --brand-strong: #6d4fe8;
+    --brand-soft: #eee9f9;
+    --brand-soft-border: rgba(132, 95, 255, 0.25);
+    --brand-circle: #c4b5fd;            /* light purple used as "Active (Regular bid)" in Adjust Bid mode */
+    --green: #15784a;
+    --green-soft: #9ed4b6;
+    --red: #d92d20;
+    --red-soft: #fca5a5;
+    --text: #000000;
+    --text-sec: #767676;
+    --text-ter: #a5a5a5;
+    --border: #e5e5e5;
+    --border-soft: #ececec;
+    --bg: #ffffff;
+    --bg-light: #f7f7f8;
+    --bg-surface-hover: #f5f5f5;
+    --r-md: 8px;
+    --r-lg: 12px;
+    --r-full: 999px;
+    --shadow-card: 0 1px 2px rgba(16, 24, 40, .04), 0 6px 20px rgba(16, 24, 40, .04);
+    --shadow-pop: 0 10px 30px rgba(16, 24, 40, .12), 0 2px 6px rgba(16, 24, 40, .06);
+    --font: "Inter", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    color: var(--text);
+    background: var(--bg-light);
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 24px 80px;
+  }
+
+  .wrap {
+    max-width: 1144px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+
+  .card-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Header */
+  .head .title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 24px;
+    margin: 0 0 4px;
+  }
+  .head .sub {
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--text-sec);
+    margin: 0;
+  }
+
+  /* Segmented toggle */
+  .seg {
+    display: inline-flex;
+    width: 340px;
+    user-select: none;
+  }
+  .seg button {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-sec);
+    font-family: var(--font);
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 22px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .seg button:first-child {
+    border-top-left-radius: var(--r-md);
+    border-bottom-left-radius: var(--r-md);
+    border-right: 0;
+  }
+  .seg button:last-child {
+    border-top-right-radius: var(--r-md);
+    border-bottom-right-radius: var(--r-md);
+  }
+  .seg button.active {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+  }
+
+  /* Tip pill */
+  .tip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--brand-soft);
+    border: 1px solid var(--brand-soft-border);
+    border-radius: var(--r-full);
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 500;
+    align-self: flex-start;
+  }
+  .tip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--brand);
+  }
+
+  /* Timeline */
+  .timeline {
+    --label-col: 90px;
+    --circle: 26px;
+    --gap-x: 14.67px; /* spacing between hour centers minus circle size */
+    --hour-w: calc(var(--circle) + var(--gap-x));   /* 40.67px */
+    --row-h: 44px;
+    position: relative;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .axis {
+    position: relative;
+    height: 24px;
+    margin-left: var(--label-col);
+  }
+  .axis-label {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-ter);
+    line-height: 20px;
+    top: 4px;
+  }
+
+  .grid {
+    position: relative;
+    margin-left: var(--label-col);
+  }
+  .grid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .v-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--bg-surface-hover);
+    pointer-events: none;
+  }
+
+  .row {
+    position: relative;
+    height: var(--row-h);
+    display: flex;
+    align-items: center;
+  }
+  .row-label {
+    position: absolute;
+    left: calc(-1 * var(--label-col));
+    width: var(--label-col);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-sec);
+    line-height: 20px;
+  }
+
+  .cell {
+    position: relative;
+    width: var(--hour-w);
+    height: var(--row-h);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+  }
+
+  /* the circle */
+  .dot {
+    width: var(--circle);
+    height: var(--circle);
+    border-radius: 999px;
+    background: var(--brand);
+    transition: transform .12s ease, background .12s, border-color .12s, box-shadow .12s;
+    pointer-events: none;
+  }
+
+  /* Schedule mode states */
+  .mode-schedule .cell.on .dot {
+    background: var(--brand);
+    border: none;
+  }
+  .mode-schedule .cell.off .dot {
+    background: transparent;
+    border: 1.2px solid #d9d9d9;
+  }
+
+  /* Adjust mode: active hours show light purple, inactive same outline */
+  .mode-adjust .cell.on .dot {
+    background: var(--brand-circle);
+    border: none;
+  }
+  .mode-adjust .cell.off .dot {
+    background: transparent;
+    border: 1.2px solid #d9d9d9;
+  }
+  .mode-adjust .cell.adj-inc.full .dot   { background: var(--green); }
+  .mode-adjust .cell.adj-inc.partial .dot { background: var(--green-soft); }
+  .mode-adjust .cell.adj-dec.full .dot   { background: var(--red); }
+  .mode-adjust .cell.adj-dec.partial .dot { background: var(--red-soft); }
+
+  /* Hover */
+  .mode-schedule .cell:hover .dot {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgba(132, 95, 255, 0.15);
+  }
+  .mode-adjust .cell:hover .dot {
+    transform: scale(1.08);
+  }
+
+  /* Selection (drag) in adjust mode */
+  .selection-box {
+    position: absolute;
+    border: 1.5px solid var(--brand);
+    border-radius: 999px;
+    pointer-events: none;
+    background: transparent;
+    z-index: 2;
+  }
+
+  /* Badge for percent */
+  .pct-badge {
+    position: absolute;
+    transform: translate(-50%, -130%);
+    background: var(--green);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 4px 6px;
+    border-radius: 4px;
+    z-index: 3;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .pct-badge.dec { background: var(--red); }
+  .pct-badge::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -3px;
+    transform: translateX(-50%) rotate(45deg);
+    width: 6px; height: 6px;
+    background: inherit;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-sec);
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: var(--brand);
+  }
+  .legend-dot.inc { background: var(--green); }
+  .legend-dot.dec { background: var(--red); }
+  .legend-dot.inactive {
+    background: transparent;
+    border: 1.2px solid #d9d9d9;
+  }
+
+  /* Footer */
+  .foot {
+    height: 64px;
+    border-top: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: var(--r-full);
+    padding: 8px 24px;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 22px;
+    cursor: pointer;
+    transition: transform .08s, opacity .15s, background .15s;
+    border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: var(--brand);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--brand-strong); }
+  .btn-primary:disabled, .btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-secondary:hover { background: #fafafa; }
+  .btn-actions { display: inline-flex; gap: 10px; }
+  .status {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-sec);
+  }
+  .status.changed { color: var(--brand); }
+
+  /* Popup */
+  .popup-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+  }
+  .popup {
+    position: absolute;
+    width: 256px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-pop);
+    padding: 16px;
+    pointer-events: auto;
+  }
+  .popup h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+  .popup .range {
+    color: var(--text-sec);
+    font-size: 12px;
+    margin: 4px 0 12px;
+  }
+  .popup .seg-mini {
+    display: flex;
+    margin-bottom: 14px;
+  }
+  .popup .seg-mini button {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-sec);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 8px;
+    cursor: pointer;
+    line-height: 18px;
+  }
+  .popup .seg-mini button:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-right: 0;
+  }
+  .popup .seg-mini button:nth-child(2) {
+    border-right: 0;
+  }
+  .popup .seg-mini button:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  .popup .seg-mini button.active {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+  }
+  .popup .seg-mini button.active.inc { background: var(--green); border-color: var(--green); }
+  .popup .seg-mini button.active.dec { background: var(--red);   border-color: var(--red); }
+  .popup .stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .popup .step-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .popup .step-btn:hover { background: #fafafa; }
+  .popup .step-val {
+    flex: 1;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: var(--font);
+    color: var(--text);
+  }
+  .popup .step-val:focus {
+    outline: none;
+    border-color: var(--brand);
+  }
+  .popup .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    align-items: center;
+  }
+  .popup .actions .link {
+    background: none;
+    border: 0;
+    color: var(--text);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .popup .actions .apply {
+    background: var(--brand);
+    color: #fff;
+    border: 0;
+    border-radius: var(--r-full);
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .popup .actions .apply:hover { background: var(--brand-strong); }
+
+  /* Helper text above */
+  .page-title {
+    max-width: 1144px;
+    margin: 0 auto 16px;
+    color: var(--text-sec);
+    font-size: 13px;
+  }
+  .page-title strong { color: var(--text); }
+
+  /* Refresh icon */
+  .ic-refresh { width: 16px; height: 16px; }
+</style>
+</head>
+<body>
+  <div class="page-title">
+    <strong>Ad Schedule · Bid Adjustments</strong> — Tap hours to toggle. Drag a range in Adjust Bid to set an increase/decrease.
+  </div>
+
+  <div class="wrap">
+    <section class="card" id="card">
+      <div class="card-body">
+        <!-- Header -->
+        <div class="head">
+          <h3 class="title">Bid Adjustments</h3>
+          <p class="sub" id="sub">Tap hours to opt them out. Switch to Edit Bid to fine-tune the bid for scheduled hours.</p>
+        </div>
+
+        <!-- Mode toggle -->
+        <div class="seg" role="tablist" aria-label="Bid mode">
+          <button id="mode-schedule" class="active" data-mode="schedule" role="tab" aria-selected="true">Schedule</button>
+          <button id="mode-adjust"   data-mode="adjust"   role="tab" aria-selected="false">Adjust Bid</button>
+        </div>
+
+        <!-- Tip -->
+        <div class="tip" id="tip">
+          <span class="tip-dot"></span>
+          <span id="tip-text">Tip · Tap a single hour to toggle, or drag across hours to schedule a range quickly.</span>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline mode-schedule" id="timeline">
+          <div class="axis" id="axis"></div>
+          <div class="grid" id="grid"></div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot"></span>Active (Regular bid)</div>
+          <div class="legend-item"><span class="legend-dot inc"></span>Increased</div>
+          <div class="legend-item"><span class="legend-dot dec"></span>Decreased</div>
+          <div class="legend-item"><span class="legend-dot inactive"></span>Inactive</div>
+        </div>
+      </div>
+
+      <!-- Save footer -->
+      <div class="foot">
+        <div class="btn-actions">
+          <button class="btn btn-primary" id="save" disabled>Save Changes</button>
+          <button class="btn btn-secondary" id="reset">
+            <svg class="ic-refresh" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M3.33 10A6.67 6.67 0 0 1 15 5.43" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16.67 10A6.67 6.67 0 0 1 5 14.57" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15.5 3v2.5H13"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4.5 17v-2.5H7"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Reset
+          </button>
+        </div>
+        <div class="status" id="status">No changes yet</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Popup layer -->
+  <div class="popup-layer" id="popup-layer"></div>
+
+<script>
+(() => {
+  const DAYS  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const HOURS = 24;
+  const tl    = document.getElementById("timeline");
+  const grid  = document.getElementById("grid");
+  const axis  = document.getElementById("axis");
+  const sub   = document.getElementById("sub");
+  const tipText = document.getElementById("tip-text");
+  const saveBtn = document.getElementById("save");
+  const resetBtn = document.getElementById("reset");
+  const statusEl = document.getElementById("status");
+  const modeScheduleBtn = document.getElementById("mode-schedule");
+  const modeAdjustBtn = document.getElementById("mode-adjust");
+  const popupLayer = document.getElementById("popup-layer");
+
+  // ---- State ----
+  // base: schedule[d][h] -> true if scheduled (active)
+  // adj : adj[d][h]      -> { dir: 'inc'|'dec'|null, pct: number }
+  let base = makeGrid(true);   // initial: all active
+  let adj  = makeAdjGrid();
+  // baseline copies to allow Reset
+  let baseInitial = clone(base);
+  let adjInitial  = cloneAdj(adj);
+  // last-saved snapshots to compute "changed since save"
+  let baseSaved = clone(base);
+  let adjSaved  = cloneAdj(adj);
+
+  let mode = "schedule";                  // 'schedule' | 'adjust'
+  let drag = null;                        // { startD, startH, lastD, lastH, mode: 'schedule-draw'|'adjust-range', applyVal? }
+  let openPopup = null;                   // { range, ... }
+
+  function makeGrid(val){
+    return Array.from({length: DAYS.length}, () => Array.from({length: HOURS}, () => val));
+  }
+  function makeAdjGrid(){
+    return Array.from({length: DAYS.length}, () => Array.from({length: HOURS}, () => ({dir:null, pct:0})));
+  }
+  function clone(g){ return g.map(r => r.slice()); }
+  function cloneAdj(g){ return g.map(r => r.map(c => ({...c}))); }
+  function gridsEqual(a,b){
+    for (let d=0; d<DAYS.length; d++) for (let h=0; h<HOURS; h++) if (a[d][h] !== b[d][h]) return false;
+    return true;
+  }
+  function adjEqual(a,b){
+    for (let d=0; d<DAYS.length; d++) for (let h=0; h<HOURS; h++) {
+      if ((a[d][h].dir||null) !== (b[d][h].dir||null)) return false;
+      if ((a[d][h].pct||0)   !== (b[d][h].pct||0))   return false;
+    }
+    return true;
+  }
+
+  // ---- Build axis labels ----
+  function buildAxis(){
+    axis.innerHTML = "";
+    const stops = [0,3,6,9,12,15,18,21];
+    const labels = ["12am","3am","6am","9am","12pm","3pm","6pm","9pm"];
+    stops.forEach((h,i) => {
+      const sp = document.createElement("span");
+      sp.className = "axis-label";
+      sp.style.left = (hourCenter(h) + "px");
+      sp.textContent = labels[i];
+      axis.appendChild(sp);
+    });
+  }
+
+  // ---- Build grid ----
+  function hourCenter(h){
+    // circle width 26, gap-x 14.67; center = h * 40.67 + 13
+    return h * 40.67 + 13;
+  }
+
+  function buildGrid(){
+    grid.innerHTML = "";
+    // vertical guide lines at every 3-hour mark
+    [3,6,9,12,15,18,21].forEach(h => {
+      const v = document.createElement("div");
+      v.className = "v-line";
+      v.style.left = (hourCenter(h) - 0.5 - 20) + "px"; // place between hours
+      v.style.top = "0"; v.style.bottom = "0";
+      grid.appendChild(v);
+    });
+
+    DAYS.forEach((dayName, d) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.dataset.day = d;
+      const lbl = document.createElement("span");
+      lbl.className = "row-label";
+      lbl.textContent = dayName;
+      row.appendChild(lbl);
+
+      for (let h=0; h<HOURS; h++){
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.day = d;
+        cell.dataset.hour = h;
+        cell.setAttribute("aria-label", `${dayName} ${formatHour(h)}`);
+        const dot = document.createElement("span");
+        dot.className = "dot";
+        cell.appendChild(dot);
+        row.appendChild(cell);
+      }
+      grid.appendChild(row);
+    });
+  }
+
+  function formatHour(h){
+    if (h === 0) return "12:00 AM";
+    if (h < 12)  return `${h}:00 AM`;
+    if (h === 12) return "12:00 PM";
+    return `${h - 12}:00 PM`;
+  }
+
+  // ---- Render state to DOM ----
+  function render(){
+    tl.classList.toggle("mode-schedule", mode === "schedule");
+    tl.classList.toggle("mode-adjust",   mode === "adjust");
+
+    modeScheduleBtn.classList.toggle("active", mode === "schedule");
+    modeAdjustBtn.classList.toggle("active",   mode === "adjust");
+    modeScheduleBtn.setAttribute("aria-selected", mode === "schedule");
+    modeAdjustBtn.setAttribute("aria-selected",   mode === "adjust");
+
+    if (mode === "schedule") {
+      sub.textContent = "Tap hours to opt them out. Switch to Edit Bid to fine-tune the bid for scheduled hours.";
+      tipText.textContent = "Tip · Tap a single hour to toggle, or drag across hours to schedule a range quickly.";
+    } else {
+      sub.textContent = "Drag a range across hours, then choose Increase or Decrease to fine-tune the bid.";
+      tipText.textContent = "Tip · Drag across hours to select a range, then choose Increase or Decrease Bid.";
+    }
+
+    // Remove all percent badges (rebuild)
+    grid.querySelectorAll(".pct-badge").forEach(el => el.remove());
+
+    const cells = grid.querySelectorAll(".cell");
+    cells.forEach(cell => {
+      const d = +cell.dataset.day, h = +cell.dataset.hour;
+      cell.classList.remove("on","off","adj-inc","adj-dec","full","partial");
+      const active = base[d][h];
+      if (active) cell.classList.add("on"); else cell.classList.add("off");
+
+      if (mode === "adjust" && active) {
+        const a = adj[d][h];
+        if (a.dir === "inc") {
+          cell.classList.add("adj-inc", a.pct >= 10 ? "full" : "partial");
+        } else if (a.dir === "dec") {
+          cell.classList.add("adj-dec", a.pct >= 5 ? "full" : "partial");
+        }
+      }
+    });
+
+    // Place percent badges (one per contiguous run of same dir/pct within a day, anchored at run end)
+    if (mode === "adjust") {
+      for (let d=0; d<DAYS.length; d++){
+        let runStart = -1, runDir = null, runPct = 0;
+        for (let h=0; h<=HOURS; h++){
+          const cur = h<HOURS ? adj[d][h] : {dir:null, pct:0};
+          const sameAsRun = runDir && cur.dir === runDir && cur.pct === runPct && base[d][h];
+          if (!sameAsRun){
+            if (runDir && runStart >= 0) {
+              placeBadge(d, runStart, h-1, runDir, runPct);
+            }
+            runStart = (cur.dir && base[d][h]) ? h : -1;
+            runDir = (cur.dir && base[d][h]) ? cur.dir : null;
+            runPct = (cur.dir && base[d][h]) ? cur.pct : 0;
+          }
+        }
+      }
+    }
+
+    // Footer status
+    const dirty = !gridsEqual(base, baseSaved) || !adjEqual(adj, adjSaved);
+    saveBtn.disabled = !dirty;
+    if (!dirty) {
+      statusEl.textContent = "No changes yet";
+      statusEl.classList.remove("changed");
+    } else {
+      const parts = [];
+      if (!gridsEqual(base, baseSaved)) parts.push("Schedule edited");
+      if (!adjEqual(adj, adjSaved))     parts.push("Bid adjustments edited");
+      statusEl.textContent = "Unsaved · " + parts.join(" + ");
+      statusEl.classList.add("changed");
+    }
+  }
+
+  function placeBadge(d, hStart, hEnd, dir, pct){
+    const midH = (hStart + hEnd) / 2;
+    const row = grid.querySelector(`.row[data-day="${d}"]`);
+    if (!row) return;
+    const badge = document.createElement("div");
+    badge.className = "pct-badge" + (dir === "dec" ? " dec" : "");
+    badge.textContent = (dir === "inc" ? "+" : "-") + pct + "%";
+    badge.style.left = hourCenter(midH) + "px";
+    badge.style.top  = "8px";
+    row.appendChild(badge);
+  }
+
+  // ---- Interaction ----
+  function cellFromEvent(e){
+    const t = (e.touches && e.touches[0]) || e;
+    const el = document.elementFromPoint(t.clientX, t.clientY);
+    if (!el) return null;
+    const cell = el.closest(".cell");
+    if (!cell || !grid.contains(cell)) return null;
+    return { cell, d: +cell.dataset.day, h: +cell.dataset.hour };
+  }
+
+  function onPointerDown(e){
+    if (openPopup) return;
+    const c = cellFromEvent(e);
+    if (!c) return;
+    e.preventDefault();
+    // Capture pointer so we keep getting moves even when the cursor leaves the cell.
+    try { e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId); } catch(_) {}
+    if (mode === "schedule") {
+      const newVal = !base[c.d][c.h];
+      drag = {
+        mode: "schedule-draw",
+        applyVal: newVal,
+        startD: c.d, startH: c.h,
+        lastD: c.d, lastH: c.h,
+        baseSnapshot: clone(base),
+        adjSnapshot: cloneAdj(adj),
+      };
+      paintScheduleRange(drag);
+    } else {
+      drag = { mode: "adjust-range", startD: c.d, startH: c.h, lastD: c.d, lastH: c.h };
+      updateSelectionBox();
+    }
+    render();
+  }
+
+  function onPointerMove(e){
+    if (!drag) return;
+    const c = cellFromEvent(e);
+    if (!c) return;
+    if (c.d === drag.lastD && c.h === drag.lastH) return;
+    drag.lastD = c.d;
+    drag.lastH = c.h;
+    if (drag.mode === "schedule-draw") {
+      paintScheduleRange(drag);
+      render();
+    } else if (drag.mode === "adjust-range") {
+      updateSelectionBox();
+    }
+  }
+
+  function paintScheduleRange(d){
+    // Reset to pre-drag snapshot, then apply applyVal inside the rectangle from start to current.
+    base = clone(d.baseSnapshot);
+    adj  = cloneAdj(d.adjSnapshot);
+    const d1 = Math.min(d.startD, d.lastD), d2 = Math.max(d.startD, d.lastD);
+    const h1 = Math.min(d.startH, d.lastH), h2 = Math.max(d.startH, d.lastH);
+    for (let dd=d1; dd<=d2; dd++) for (let hh=h1; hh<=h2; hh++) {
+      base[dd][hh] = d.applyVal;
+      if (!d.applyVal) adj[dd][hh] = {dir:null, pct:0};
+    }
+  }
+
+  function onPointerUp(e){
+    if (!drag) return;
+    if (drag.mode === "adjust-range") {
+      const range = normalizeRange(drag);
+      drag = null;
+      // Only open popup if there's at least one active (scheduled) hour in the range
+      const hasActive = anyActiveInRange(range);
+      if (hasActive) openAdjustPopup(range, e);
+      else clearSelectionBox();
+    } else {
+      drag = null;
+    }
+  }
+
+  function paintScheduleCell(d, h, val){
+    base[d][h] = val;
+    // If we un-schedule an hour, also clear any adjustment on it
+    if (!val) adj[d][h] = {dir:null, pct:0};
+  }
+
+  function normalizeRange(d){
+    const d1 = Math.min(d.startD, d.lastD);
+    const d2 = Math.max(d.startD, d.lastD);
+    const h1 = Math.min(d.startH, d.lastH);
+    const h2 = Math.max(d.startH, d.lastH);
+    return { d1, d2, h1, h2 };
+  }
+
+  function anyActiveInRange(r){
+    for (let d=r.d1; d<=r.d2; d++) for (let h=r.h1; h<=r.h2; h++) if (base[d][h]) return true;
+    return false;
+  }
+
+  // ---- Selection box rendering ----
+  let selBox = null;
+  function updateSelectionBox(){
+    if (!drag || drag.mode !== "adjust-range") return;
+    const r = normalizeRange(drag);
+    if (!selBox) {
+      selBox = document.createElement("div");
+      selBox.className = "selection-box";
+      grid.appendChild(selBox);
+    }
+    // Anchor on the actual dot bounding rects rather than the cell rect — cells are flex
+    // containers that vertically center the dot inside a 44px row, so cell.top/cell.bottom
+    // don't match the dot edges.
+    const cells = [
+      grid.querySelector(`.cell[data-day="${r.d1}"][data-hour="${r.h1}"]`),
+      grid.querySelector(`.cell[data-day="${r.d1}"][data-hour="${r.h2}"]`),
+      grid.querySelector(`.cell[data-day="${r.d2}"][data-hour="${r.h1}"]`),
+      grid.querySelector(`.cell[data-day="${r.d2}"][data-hour="${r.h2}"]`),
+    ].filter(Boolean);
+    if (cells.length < 2) return;
+    const dots = cells.map(c => c.querySelector(".dot").getBoundingClientRect());
+    const gridRect = grid.getBoundingClientRect();
+    const padX = 6, padY = 6;
+    const left   = Math.min(...dots.map(d => d.left))   - gridRect.left - padX;
+    const right  = Math.max(...dots.map(d => d.right))  - gridRect.left + padX;
+    const top    = Math.min(...dots.map(d => d.top))    - gridRect.top  - padY;
+    const bottom = Math.max(...dots.map(d => d.bottom)) - gridRect.top  + padY;
+    selBox.style.left   = left + "px";
+    selBox.style.top    = top + "px";
+    selBox.style.width  = (right - left) + "px";
+    selBox.style.height = (bottom - top) + "px";
+    selBox.style.borderRadius = ((bottom - top) / 2) + "px";
+  }
+  function clearSelectionBox(){
+    if (selBox) { selBox.remove(); selBox = null; }
+  }
+
+  // ---- Popup (Adjust bid) ----
+  function openAdjustPopup(range, anchorEvent){
+    closePopup();
+    // Pre-fill dir/pct from a representative cell
+    const repr = pickRepresentative(range);
+    const initial = {
+      dir: repr.dir || "inc",
+      pct: repr.pct || (repr.dir === "dec" ? 5 : 10),
+    };
+
+    openPopup = { range, ...initial };
+
+    const popup = document.createElement("div");
+    popup.className = "popup";
+    popup.innerHTML = `
+      <h4>Adjust bid</h4>
+      <p class="range">${rangeLabel(range)}</p>
+      <div class="seg-mini" role="tablist">
+        <button data-dir="none">Default</button>
+        <button data-dir="inc" class="active inc">Increase</button>
+        <button data-dir="dec">Decrease</button>
+      </div>
+      <div class="stepper">
+        <button class="step-btn" data-step="-1">−</button>
+        <input class="step-val" inputmode="numeric" />
+        <button class="step-btn" data-step="1">+</button>
+      </div>
+      <div class="actions">
+        <button class="link" data-act="cancel">Cancel</button>
+        <button class="apply" data-act="apply">Apply</button>
+      </div>
+    `;
+    popupLayer.appendChild(popup);
+
+    // Position
+    positionPopup(popup, anchorEvent, range);
+
+    const segMini = popup.querySelector(".seg-mini");
+    const valInput = popup.querySelector(".step-val");
+    function syncDir(){
+      segMini.querySelectorAll("button").forEach(b => {
+        const d = b.dataset.dir;
+        b.classList.toggle("active", d === openPopup.dir || (d === "inc" && openPopup.dir === "inc") || (d === "dec" && openPopup.dir === "dec") || (d === "none" && openPopup.dir === "none"));
+        b.classList.toggle("inc", d === "inc");
+        b.classList.toggle("dec", d === "dec");
+      });
+      valInput.disabled = openPopup.dir === "none";
+      valInput.value = openPopup.dir === "none"
+        ? "—"
+        : (openPopup.dir === "inc" ? "+" : "-") + openPopup.pct + "%";
+    }
+    syncDir();
+
+    segMini.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      openPopup.dir = b.dataset.dir;
+      if (openPopup.dir === "inc" && (!openPopup.pct || openPopup.pct < 1)) openPopup.pct = 10;
+      if (openPopup.dir === "dec" && (!openPopup.pct || openPopup.pct < 1)) openPopup.pct = 5;
+      syncDir();
+    });
+    popup.querySelectorAll(".step-btn").forEach(b => {
+      b.addEventListener("click", () => {
+        if (openPopup.dir === "none") return;
+        const step = +b.dataset.step;
+        openPopup.pct = Math.max(1, Math.min(99, (openPopup.pct || 0) + step * 5));
+        syncDir();
+      });
+    });
+    valInput.addEventListener("input", () => {
+      const m = valInput.value.match(/\d+/);
+      openPopup.pct = m ? Math.max(1, Math.min(99, +m[0])) : openPopup.pct;
+    });
+    valInput.addEventListener("blur", syncDir);
+
+    popup.querySelector('[data-act="cancel"]').addEventListener("click", closePopup);
+    popup.querySelector('[data-act="apply"]').addEventListener("click", applyPopup);
+
+    // Click outside cancels
+    setTimeout(() => {
+      document.addEventListener("mousedown", outsideHandler, { capture: true });
+    }, 0);
+  }
+
+  function outsideHandler(e){
+    if (!openPopup) return;
+    const p = popupLayer.querySelector(".popup");
+    if (p && !p.contains(e.target)) closePopup();
+  }
+
+  function positionPopup(popup, ev, range){
+    const cell1 = grid.querySelector(`.cell[data-day="${range.d1}"][data-hour="${range.h1}"]`);
+    const cell2 = grid.querySelector(`.cell[data-day="${range.d2}"][data-hour="${range.h2}"]`);
+    if (!cell1 || !cell2) return;
+    const a = cell1.getBoundingClientRect();
+    const b = cell2.getBoundingClientRect();
+    const midX = (a.left + b.left + b.width) / 2;
+    const bottomY = Math.max(a.bottom, b.bottom);
+    const w = popup.offsetWidth || 256;
+    let left = midX - w/2;
+    const margin = 8;
+    if (left < margin) left = margin;
+    if (left + w > window.innerWidth - margin) left = window.innerWidth - margin - w;
+    let top = bottomY + 12;
+    if (top + popup.offsetHeight > window.innerHeight - margin) {
+      top = Math.min(a.top, b.top) - popup.offsetHeight - 12;
+    }
+    popup.style.left = left + "px";
+    popup.style.top  = top + "px";
+  }
+
+  function pickRepresentative(range){
+    for (let d=range.d1; d<=range.d2; d++)
+      for (let h=range.h1; h<=range.h2; h++)
+        if (base[d][h] && adj[d][h].dir) return adj[d][h];
+    return {dir:null, pct:0};
+  }
+
+  function rangeLabel(r){
+    const dayName = r.d1 === r.d2 ? DAYS[r.d1] : `${DAYS[r.d1]} – ${DAYS[r.d2]}`;
+    const start = formatHour(r.h1);
+    const end   = formatHour((r.h2 + 1) % 24);   // end is exclusive
+    return `${dayName} · ${start} – ${end}`;
+  }
+
+  function applyPopup(){
+    if (!openPopup) return;
+    const r = openPopup.range;
+    for (let d=r.d1; d<=r.d2; d++) for (let h=r.h1; h<=r.h2; h++) {
+      if (!base[d][h]) continue;   // skip inactive hours
+      if (openPopup.dir === "none") {
+        adj[d][h] = {dir:null, pct:0};
+      } else {
+        adj[d][h] = { dir: openPopup.dir, pct: openPopup.pct };
+      }
+    }
+    closePopup();
+    render();
+  }
+
+  function closePopup(){
+    if (popupLayer.firstChild) popupLayer.innerHTML = "";
+    openPopup = null;
+    clearSelectionBox();
+    document.removeEventListener("mousedown", outsideHandler, { capture: true });
+  }
+
+  // ---- Wire events ----
+  function attachInteractions(){
+    grid.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+  }
+
+  modeScheduleBtn.addEventListener("click", () => { mode = "schedule"; closePopup(); render(); });
+  modeAdjustBtn.addEventListener("click",   () => { mode = "adjust";   closePopup(); render(); });
+
+  saveBtn.addEventListener("click", () => {
+    if (saveBtn.disabled) return;
+    baseSaved = clone(base);
+    adjSaved  = cloneAdj(adj);
+    render();
+    pulseStatus("Saved");
+  });
+
+  resetBtn.addEventListener("click", () => {
+    base = clone(baseInitial);
+    adj  = cloneAdj(adjInitial);
+    closePopup();
+    render();
+  });
+
+  function pulseStatus(msg){
+    statusEl.textContent = msg;
+    statusEl.classList.remove("changed");
+    statusEl.style.color = "var(--green)";
+    setTimeout(() => {
+      statusEl.style.color = "";
+      render();
+    }, 1200);
+  }
+
+  // ---- Init ----
+  // Default: every hour is selected. User only deselects from here.
+  buildAxis();
+  buildGrid();
+  attachInteractions();
+  render();
+
+  // re-position selection on resize
+  window.addEventListener("resize", () => { if (drag) updateSelectionBox(); });
+})();
+</script>
+</body>
+</html>

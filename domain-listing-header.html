@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Domain Listing — Header Improvements</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --border-strong: #d1d5db;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --text-subtle: #9ca3af;
+    --primary: #0957D1;
+    --primary-hover: #0848b3;
+    --primary-soft: #eef4ff;
+    --green: #16a34a;
+    --green-soft: #dcfce7;
+    --amber: #d97706;
+    --amber-soft: #fef3c7;
+    --red: #dc2626;
+    --red-soft: #fee2e2;
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04);
+    --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.06);
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 40px 32px 80px;
+  }
+
+  .page-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    letter-spacing: 0.02em;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin: 40px 0 12px;
+  }
+  .section-label::before {
+    content: "";
+    width: 24px;
+    height: 1px;
+    background: var(--border-strong);
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    max-width: 720px;
+  }
+  .section-desc strong { color: var(--text); font-weight: 600; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Header row */
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .mode-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .mode-pill strong { color: var(--text); font-weight: 600; }
+  .mode-pill .edit-ic {
+    color: var(--text-subtle);
+    cursor: pointer;
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 4px;
+  }
+  .mode-pill .edit-ic:hover { background: var(--bg); color: var(--text); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    background: none;
+    color: inherit;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    padding: 9px 16px;
+    box-shadow: 0 1px 2px rgba(9, 87, 209, 0.2);
+  }
+  .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: transparent;
+  }
+  .btn-ghost:hover { background: var(--bg); }
+
+  .btn-outline {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .btn-outline:hover { background: var(--bg); }
+
+  .btn-icon {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    position: relative;
+  }
+  .btn-icon:hover { background: var(--bg); color: var(--text); }
+
+  /* Tooltip */
+  .tooltip {
+    position: relative;
+  }
+  .tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111827;
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+  .tooltip:hover::after { opacity: 1; }
+
+  /* Divider for grouped buttons */
+  .btn-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+  }
+  .btn-group .btn-icon { width: 30px; height: 30px; }
+
+  /* Vertical separator */
+  .vsep {
+    width: 1px;
+    height: 22px;
+    background: var(--border);
+  }
+
+  /* Dropdown menu */
+  .menu-wrap { position: relative; display: inline-block; }
+  .menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 220px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: all 0.15s ease;
+    z-index: 10;
+  }
+  .menu-wrap:hover .menu,
+  .menu-wrap.open .menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--text);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .menu-item:hover { background: var(--bg); }
+  .menu-item svg { color: var(--text-muted); flex-shrink: 0; }
+  .menu-sep { height: 1px; background: var(--border); margin: 4px 2px; }
+
+  /* Caption under each option */
+  .caption {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .caption strong { color: var(--text); font-weight: 600; }
+  .caption .check { color: var(--green); flex-shrink: 0; margin-top: 1px; }
+
+  /* Annotation badges next to options */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 7px;
+    border-radius: 999px;
+    margin-left: 8px;
+  }
+  .badge-rec { background: var(--green-soft); color: var(--green); }
+  .badge-alt { background: var(--primary-soft); color: var(--primary); }
+
+  /* Original (problem) styling */
+  .problem-card {
+    border-color: #fecaca;
+    background: #fffafa;
+  }
+  .problem-card .header-right .btn-icon {
+    border: 1px dashed #fca5a5;
+  }
+  .problem-note {
+    font-size: 12px;
+    color: var(--red);
+    background: var(--red-soft);
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-top: 14px;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">Domain Listing — Header CTA Improvements</div>
+
+<!-- ============================= -->
+<!-- PROBLEM (current state)       -->
+<!-- ============================= -->
+<div class="section-label">Current — the problem</div>
+<p class="section-desc">
+  Two icon buttons (upload, download) sit directly next to a filled <strong>Upload for Vetting</strong> CTA.
+  Result: the word "upload" appears twice, the icon buttons compete with the primary action, and hierarchy reads as broken.
+</p>
+
+<div class="card problem-card">
+  <div class="header-row">
+    <div class="header-left">
+      <span class="header-title">Domains List</span>
+    </div>
+    <div class="header-right">
+      <span class="mode-pill">
+        Mode: <strong>Target only approved domains</strong>
+        <span class="edit-ic">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+      </span>
+      <button class="btn btn-icon" aria-label="Upload">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </button>
+      <button class="btn btn-icon" aria-label="Download">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        UPLOAD FOR VETTING
+      </button>
+    </div>
+  </div>
+  <span class="problem-note">⚠ "Upload" verb used twice • icon buttons compete with the CTA • no visual grouping</span>
+</div>
+
+
+<!-- ============================= -->
+<!-- OPTION 1 — Overflow menu (recommended) -->
+<!-- ============================= -->
+<div class="section-label">Option 1 — Overflow menu <span class="badge badge-rec">Recommended</span></div>
+<p class="section-desc">
+  Collapse Import / Export into a single <strong>•••</strong> menu. The CTA renamed to <strong>Submit for Vetting</strong> to kill the verb collision. One hero action, secondary actions discoverable.
+</p>
+
+<div class="card">
+  <div class="header-row">
+    <div class="header-left">
+      <span class="header-title">Domains List</span>
+    </div>
+    <div class="header-right">
+      <span class="mode-pill">
+        Mode: <strong>Target only approved domains</strong>
+        <span class="edit-ic">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+      </span>
+      <span class="vsep"></span>
+      <div class="menu-wrap">
+        <button class="btn btn-icon tooltip" data-tooltip="More actions" aria-label="More actions">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        </button>
+        <div class="menu">
+          <div class="menu-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Bulk
+          </div>
+          <div class="menu-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </div>
+          <div class="menu-sep"></div>
+          <div class="menu-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Sync ads.txt status
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Submit for Vetting
+      </button>
+    </div>
+  </div>
+  <div class="caption">
+    <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span><strong>Wins:</strong> one primary action • zero verb collision • scales as more bulk actions get added • the ••• menu is a familiar pattern users already scan for.</span>
+  </div>
+</div>
+
+
+<!-- ============================= -->
+<!-- OPTION 2 — Rename with labeled icons -->
+<!-- ============================= -->
+<div class="section-label">Option 2 — Rename + labeled icons <span class="badge badge-alt">Alternative</span></div>
+<p class="section-desc">
+  Keep the two actions visible but rename them to <strong>Import</strong> / <strong>Export</strong> so "upload" only appears on the CTA. Adds text labels so meaning isn't carried by icon alone.
+</p>
+
+<div class="card">
+  <div class="header-row">
+    <div class="header-left">
+      <span class="header-title">Domains List</span>
+    </div>
+    <div class="header-right">
+      <span class="mode-pill">
+        Mode: <strong>Target only approved domains</strong>
+        <span class="edit-ic">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+      </span>
+      <span class="vsep"></span>
+      <button class="btn btn-ghost">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Bulk
+      </button>
+      <button class="btn btn-ghost">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Submit for Vetting
+      </button>
+    </div>
+  </div>
+  <div class="caption">
+    <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span><strong>Wins:</strong> all actions are visible one-click • text labels remove icon ambiguity • the two ghost buttons clearly read as tertiary against the filled CTA.</span>
+  </div>
+</div>
+
+
+<!-- ============================= -->
+<!-- OPTION 3 — Segmented group + CTA -->
+<!-- ============================= -->
+<div class="section-label">Option 3 — Segmented icon group <span class="badge badge-alt">Alternative</span></div>
+<p class="section-desc">
+  Bundle Import / Export into a single segmented control so they read as one pair, separated from the CTA by clear whitespace. Compact but still visible.
+</p>
+
+<div class="card">
+  <div class="header-row">
+    <div class="header-left">
+      <span class="header-title">Domains List</span>
+    </div>
+    <div class="header-right">
+      <span class="mode-pill">
+        Mode: <strong>Target only approved domains</strong>
+        <span class="edit-ic">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+      </span>
+      <span class="vsep"></span>
+      <div class="btn-group">
+        <button class="btn btn-icon tooltip" data-tooltip="Upload Bulk">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <button class="btn btn-icon tooltip" data-tooltip="Download">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+      </div>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Submit for Vetting
+      </button>
+    </div>
+  </div>
+  <div class="caption">
+    <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span><strong>Wins:</strong> icons stay compact • the segmented background makes "this is one paired utility" obvious • clear separation from the hero CTA.</span>
+  </div>
+</div>
+
+
+<!-- ============================= -->
+<!-- OPTION 4 — Split button -->
+<!-- ============================= -->
+<div class="section-label">Option 4 — Split-button CTA <span class="badge badge-alt">Power-user</span></div>
+<p class="section-desc">
+  Fold the secondary upload paths under the primary CTA as a split-button. Best if "Submit for Vetting" has variants (single, bulk CSV, paste list).
+</p>
+
+<div class="card">
+  <div class="header-row">
+    <div class="header-left">
+      <span class="header-title">Domains List</span>
+    </div>
+    <div class="header-right">
+      <span class="mode-pill">
+        Mode: <strong>Target only approved domains</strong>
+        <span class="edit-ic">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+      </span>
+      <span class="vsep"></span>
+      <button class="btn btn-ghost tooltip" data-tooltip="Download">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <div class="menu-wrap" style="display:inline-flex;">
+        <button class="btn btn-primary" style="border-top-right-radius:0; border-bottom-right-radius:0; margin-right:1px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Submit for Vetting
+        </button>
+        <button class="btn btn-primary" style="padding:9px 10px; border-top-left-radius:0; border-bottom-left-radius:0;" aria-label="More submit options">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="menu">
+          <div class="menu-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add single domain
+          </div>
+          <div class="menu-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Upload CSV
+          </div>
+          <div class="menu-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Paste domain list
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="caption">
+    <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span><strong>Wins:</strong> reinforces the hero action's primacy • removes the second top-level upload entirely • only worth it if Submit has real variants.</span>
+  </div>
+</div>
+
+
+<!-- ============================= -->
+<!-- OPTION 5 — Move to page header -->
+<!-- ============================= -->
+<div class="section-label">Option 5 — Lift CTA to page header <span class="badge badge-alt">Architectural</span></div>
+<p class="section-desc">
+  Move the primary CTA up to the page-level header (next to the campaign breadcrumb). The card header keeps only utilities. This frees the table card from competing actions entirely.
+</p>
+
+<!-- Fake page header -->
+<div style="background:#1f2937; border-radius: 10px 10px 0 0; padding: 14px 24px; display:flex; align-items:center; justify-content:space-between; color:#fff; margin-bottom: 0;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <span style="display:inline-flex; width:28px; height:28px; align-items:center; justify-content:center; background:#374151; border-radius:6px; color:#fbbf24; font-size:14px;">★</span>
+    <div>
+      <div style="font-size:11px; color:#9ca3af; letter-spacing:0.04em;">CAMPAIGN</div>
+      <div style="font-size:14px; font-weight:600;">Dappier - OB - DirectPay <span style="color:#9ca3af; font-weight:400;">· 8CUMH2SO6</span></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" style="background:#fff; color:var(--primary); border-color:#fff;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Submit for Vetting
+  </button>
+</div>
+
+<div class="card" style="border-top-left-radius:0; border-top-right-radius:0; border-top:none;">
+  <div class="header-row">
+    <div class="header-left">
+      <span class="header-title">Domains List</span>
+      <span style="font-size:12px; color:var(--text-muted); margin-left:8px;">256 domains</span>
+    </div>
+    <div class="header-right">
+      <span class="mode-pill">
+        Mode: <strong>Target only approved domains</strong>
+        <span class="edit-ic">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+      </span>
+      <span class="vsep"></span>
+      <button class="btn btn-ghost">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Bulk
+      </button>
+      <button class="btn btn-ghost">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+  </div>
+  <div class="caption">
+    <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span><strong>Wins:</strong> hero CTA gets its own scope at the campaign level • card actions are purely list-utility • no hierarchy competition at all. Best if "Submit for Vetting" is a campaign-wide action, not list-specific.</span>
+  </div>
+</div>
+
+
+<!-- ============================= -->
+<!-- OPTION 6 — Toolbar row -->
+<!-- ============================= -->
+<div class="section-label">Option 6 — Dedicated toolbar row <span class="badge badge-alt">Layout shift</span></div>
+<p class="section-desc">
+  Separate the card header from the action toolbar. Title + Mode sit on row 1. Search + filters + utility actions sit on row 2 next to the CTA. This is how Linear, Notion, and modern data tables structure dense headers.
+</p>
+
+<div class="card">
+  <!-- Row 1: title + mode -->
+  <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 14px;">
+    <div style="display:flex; align-items:baseline; gap:10px;">
+      <span class="header-title">Domains List</span>
+      <span style="font-size:12px; color:var(--text-muted);">256 total</span>
+    </div>
+    <span class="mode-pill">
+      Mode: <strong>Target only approved domains</strong>
+      <span class="edit-ic">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </span>
+    </span>
+  </div>
+  <!-- Row 2: search + actions -->
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+    <div style="display:flex; align-items:center; gap:8px; flex:1;">
+      <div style="display:flex; align-items:center; gap:8px; padding:7px 12px; background:var(--bg); border-radius:6px; min-width:260px; max-width:320px; flex:1;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-subtle);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span style="color:var(--text-subtle); font-size:13px;">Search domain / Bundle ID</span>
+      </div>
+      <button class="btn btn-ghost" style="padding:7px 10px; font-size:12px; color:var(--text-muted);">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Filters
+      </button>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button class="btn btn-ghost tooltip" data-tooltip="Upload Bulk CSV">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Bulk
+      </button>
+      <button class="btn btn-ghost tooltip" data-tooltip="Download as CSV">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <span class="vsep"></span>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Submit for Vetting
+      </button>
+    </div>
+  </div>
+  <div class="caption">
+    <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span><strong>Wins:</strong> title row stays calm and informative • toolbar row gathers all data-handling controls in one place • search + filters + import/export + CTA flow left-to-right in order of frequency.</span>
+  </div>
+</div>
+
+
+<!-- ============================= -->
+<!-- OPTION 7 — Selection-aware bulk bar -->
+<!-- ============================= -->
+<div class="section-label">Option 7 — Selection-aware bulk bar <span class="badge badge-alt">Progressive</span></div>
+<p class="section-desc">
+  Default state keeps only the CTA in the header. Import/Export only surface when the user selects rows (or stays hidden in a quiet ••• menu). Frees the header from passive utility buttons users rarely click.
+</p>
+
+<!-- Default state -->
+<div class="card" style="margin-bottom:12px;">
+  <div style="font-size:11px; color:var(--text-subtle); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Default state — no rows selected</div>
+  <div class="header-row">
+    <div class="header-left">
+      <span class="header-title">Domains List</span>
+    </div>
+    <div class="header-right">
+      <span class="mode-pill">
+        Mode: <strong>Target only approved domains</strong>
+        <span class="edit-ic">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+      </span>
+      <span class="vsep"></span>
+      <button class="btn btn-icon tooltip" data-tooltip="More actions">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      </button>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Submit for Vetting
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Selection state -->
+<div class="card" style="background:#0957D1; border-color:#0957D1; color:#fff;">
+  <div style="font-size:11px; color:rgba(255,255,255,0.7); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Active state — 3 rows selected</div>
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:5px 12px; border-radius:6px; font-size:13px; font-weight:500;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        3 domains selected
+      </div>
+      <button style="background:none; border:none; color:rgba(255,255,255,0.85); font-size:12px; cursor:pointer; text-decoration:underline;">Clear</button>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <button class="btn" style="background:rgba(255,255,255,0.12); color:#fff; border:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download selected
+      </button>
+      <button class="btn" style="background:rgba(255,255,255,0.12); color:#fff; border:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Approve
+      </button>
+      <button class="btn" style="background:#fff; color:var(--primary); border:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Submit 3 for Vetting
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="background:#fafbfc; margin-top:12px;">
+  <div class="caption" style="border-top:none; margin-top:0; padding-top:0;">
+    <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span><strong>Wins:</strong> the cleanest default header in the set • bulk actions appear precisely when they're relevant • the active-state bar doubles as a confirmation that selection registered. Pairs well with Option 1's ••• menu for the rare "no selection" import use-case.</span>
+  </div>
+</div>
+
+
+<!-- ============================= -->
+<!-- Spec notes                    -->
+<!-- ============================= -->
+<div class="section-label">Hierarchy fixes applied across all options</div>
+<div class="card" style="background:#fafbfc;">
+  <ul style="margin:0; padding-left: 20px; color: var(--text-muted); font-size: 13px; line-height: 1.9;">
+    <li>Vertical separator (1×22px, <code>#e5e7eb</code>) between Mode and action buttons — visually groups the cluster.</li>
+    <li>16px gap between secondary actions and the primary CTA — gives the hero room to breathe.</li>
+    <li>Secondary buttons demoted to <strong>ghost</strong> (no border, no fill) so they read as tertiary against the filled CTA.</li>
+    <li>CTA verb changed to <strong>Submit for Vetting</strong> — more accurate (vetting is the outcome, upload is the mechanism) and eliminates the duplicate "upload".</li>
+    <li>Tooltips on every icon-only button so meaning isn't carried by glyph alone.</li>
+    <li>Sentence case on the CTA label — uppercase felt loud next to ghost-button labels.</li>
+  </ul>
+</div>
+
+</body>
+</html>

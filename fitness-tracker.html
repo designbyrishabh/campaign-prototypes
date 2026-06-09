@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personal Fitness Tracker — 3 Screens</title>
+<style>
+  /* ---------- Design Tokens ---------- */
+  :root {
+    --bg-canvas: #ECEDE8;
+    --bg-screen: #FAFAF7;
+    --bg-card: #FFFFFF;
+    --bg-soft: #F2F2EE;
+    --ink-900: #131313;
+    --ink-700: #3A3A3A;
+    --ink-500: #6B6B6B;
+    --ink-400: #9A9A9A;
+    --ink-200: #D8D8D2;
+    --accent: #B6E84A;       /* fresh lime — energy */
+    --accent-ink: #1F2A0A;
+    --accent-soft: #EBF5C9;
+    --warn: #FFB23F;
+    --good: #4CB783;
+    --r-sm: 12px;
+    --r-md: 18px;
+    --r-lg: 24px;
+    --r-pill: 999px;
+    --shadow-card: 0 1px 2px rgba(19,19,19,.04), 0 8px 24px rgba(19,19,19,.04);
+    --font: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg-canvas);
+    font-family: var(--font);
+    color: var(--ink-900);
+    -webkit-font-smoothing: antialiased;
+    padding: 56px 32px;
+  }
+
+  /* ---------- Page header (not part of design) ---------- */
+  .page-title {
+    text-align: center;
+    margin-bottom: 40px;
+    color: var(--ink-700);
+  }
+  .page-title h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .page-title p { font-size: 13px; color: var(--ink-500); margin-top: 6px; }
+
+  /* ---------- Screen frames container ---------- */
+  .screens {
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- Frame: Mobile (390×844) ---------- */
+  /* Figma: Frame "Screen / [Name]" — 390 × 844 — Auto Layout: Vertical, gap 0 */
+  .frame {
+    width: 390px;
+    height: 844px;
+    background: var(--bg-screen);
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 8px #1a1a1a,
+      0 24px 60px rgba(0,0,0,.18);
+    display: flex;
+    flex-direction: column;
+  }
+  .frame-label {
+    position: absolute;
+    bottom: -44px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-500);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Status Bar (390 × 54) ---------- */
+  /* Figma: Frame "StatusBar" — Auto Layout: Horizontal, space-between, padding 24 16 */
+  .status-bar {
+    height: 54px;
+    padding: 18px 28px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink-900);
+    flex-shrink: 0;
+  }
+  .status-bar .icons { display: flex; gap: 6px; align-items: center; }
+
+  /* ---------- Generic content scroll area ---------- */
+  .content {
+    flex: 1;
+    overflow: hidden;
+    padding: 8px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ---------- Screen Header ---------- */
+  /* Figma: Frame "Header" — Auto Layout: Horizontal, space-between, padding 8 4 */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px 0;
+  }
+  .header .greeting .label { font-size: 13px; color: var(--ink-500); font-weight: 500; }
+  .header .greeting .name { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
+  .header .title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #C7D8A0, #8FA862);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 600; font-size: 14px;
+  }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--bg-card); display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ---------- Card base ---------- */
+  /* Figma: Component "Card" — fill bg-card, radius 24, shadow card */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--r-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ===========================================================
+     SCREEN 1 — DASHBOARD
+     =========================================================== */
+
+  /* Activity ring hero card */
+  .ring-card {
+    background: var(--ink-900);
+    color: white;
+    border-radius: var(--r-lg);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .ring-card .top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .ring-card .label { font-size: 13px; color: rgba(255,255,255,.6); font-weight: 500; }
+  .ring-card .value { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
+  .ring-card .unit { font-size: 14px; color: rgba(255,255,255,.5); margin-left: 4px; font-weight: 500; }
+  .ring-card .pill {
+    background: var(--accent); color: var(--accent-ink);
+    border-radius: var(--r-pill); padding: 6px 12px;
+    font-size: 12px; font-weight: 600;
+  }
+  .ring-card .ring-row {
+    display: flex; gap: 16px; align-items: center;
+  }
+  .ring-card .ring-svg { flex-shrink: 0; }
+  .ring-card .ring-stats { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .ring-stat-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .ring-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .ring-stat-row .name { color: rgba(255,255,255,.7); flex: 1; }
+  .ring-stat-row .num { font-weight: 600; }
+
+  /* Quick stats grid */
+  /* Figma: Frame "QuickStats" — Auto Layout: Horizontal, gap 12, fill-container */
+  .quick-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .stat-tile {
+    background: var(--bg-card);
+    border-radius: var(--r-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: var(--shadow-card);
+  }
+  .stat-tile .stat-icon {
+    width: 32px; height: 32px; border-radius: 10px;
+    background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stat-tile .stat-label { font-size: 12px; color: var(--ink-500); font-weight: 500; }
+  .stat-tile .stat-value { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .stat-tile .stat-sub { font-size: 11px; color: var(--good); font-weight: 600; }
+
+  /* Workout card */
+  .workout-card .row {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .workout-card .thumb {
+    width: 56px; height: 56px; border-radius: 16px;
+    background: var(--accent); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .workout-card .info { flex: 1; }
+  .workout-card .info .small { font-size: 12px; color: var(--ink-500); font-weight: 500; }
+  .workout-card .info .title { font-size: 16px; font-weight: 600; margin-top: 2px; }
+  .workout-card .info .meta { font-size: 12px; color: var(--ink-500); margin-top: 4px; }
+  .workout-card .start-btn {
+    background: var(--ink-900); color: white;
+    border-radius: var(--r-pill); padding: 10px 16px;
+    font-size: 13px; font-weight: 600;
+  }
+
+  /* ===========================================================
+     SCREEN 2 — HEALTHY HABITS
+     =========================================================== */
+
+  /* Date strip */
+  /* Figma: Frame "DateStrip" — Auto Layout: Horizontal, gap 8, fill-container */
+  .date-strip {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .date-pill {
+    flex: 1;
+    background: var(--bg-card);
+    border-radius: var(--r-md);
+    padding: 12px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    box-shadow: var(--shadow-card);
+  }
+  .date-pill .dow { font-size: 11px; color: var(--ink-500); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+  .date-pill .day { font-size: 16px; font-weight: 700; }
+  .date-pill.active { background: var(--ink-900); }
+  .date-pill.active .dow { color: rgba(255,255,255,.7); }
+  .date-pill.active .day { color: white; }
+  .date-pill .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); margin-top: 2px; }
+
+  /* Streak banner */
+  .streak-banner {
+    background: var(--accent);
+    border-radius: var(--r-lg);
+    padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .streak-banner .flame {
+    width: 44px; height: 44px; border-radius: 14px;
+    background: var(--accent-ink); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .streak-banner .text { flex: 1; }
+  .streak-banner .text .num { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .streak-banner .text .label { font-size: 12px; color: var(--accent-ink); opacity: .7; font-weight: 500; margin-top: 2px; }
+
+  /* Habit list */
+  /* Figma: Frame "HabitList" — Auto Layout: Vertical, gap 10, fill-container */
+  .habit-list { display: flex; flex-direction: column; gap: 10px; }
+  .habit-row {
+    background: var(--bg-card);
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: var(--shadow-card);
+  }
+  .habit-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .habit-info { flex: 1; min-width: 0; }
+  .habit-info .name { font-size: 14px; font-weight: 600; }
+  .habit-info .progress-track {
+    margin-top: 8px;
+    height: 4px; background: var(--bg-soft); border-radius: 999px; overflow: hidden;
+  }
+  .habit-info .progress-fill {
+    height: 100%; background: var(--ink-900); border-radius: 999px;
+  }
+  .habit-info .meta { font-size: 11px; color: var(--ink-500); font-weight: 500; margin-top: 6px; }
+  .habit-check {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid var(--ink-200);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .habit-check.done { background: var(--ink-900); border-color: var(--ink-900); }
+  .habit-row.done .habit-info .name { color: var(--ink-500); text-decoration: line-through; text-decoration-color: var(--ink-400); }
+
+  /* Add habit button */
+  .add-habit {
+    border: 1.5px dashed var(--ink-200);
+    border-radius: var(--r-md);
+    padding: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    color: var(--ink-500); font-size: 13px; font-weight: 600;
+  }
+
+  /* ===========================================================
+     SCREEN 3 — PROGRESS
+     =========================================================== */
+
+  /* Segmented control */
+  .segmented {
+    background: var(--bg-soft);
+    border-radius: var(--r-pill);
+    padding: 4px;
+    display: flex;
+    gap: 2px;
+  }
+  .seg {
+    flex: 1; text-align: center;
+    padding: 8px 0;
+    font-size: 13px; font-weight: 600;
+    color: var(--ink-500);
+    border-radius: var(--r-pill);
+  }
+  .seg.active { background: var(--bg-card); color: var(--ink-900); box-shadow: var(--shadow-card); }
+
+  /* Chart card */
+  .chart-card { padding: 22px 20px 18px; }
+  .chart-card .title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .chart-card .title-row .label { font-size: 12px; color: var(--ink-500); font-weight: 500; }
+  .chart-card .title-row .value { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
+  .chart-card .title-row .delta {
+    background: var(--accent-soft); color: var(--accent-ink);
+    border-radius: var(--r-pill); padding: 4px 10px;
+    font-size: 11px; font-weight: 700;
+  }
+  .chart-bars { height: 140px; display: flex; align-items: flex-end; gap: 10px; padding-top: 8px; }
+  .chart-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .chart-bar .bar {
+    width: 100%; border-radius: 8px 8px 4px 4px;
+    background: var(--bg-soft);
+  }
+  .chart-bar.active .bar { background: var(--accent); }
+  .chart-bar .day { font-size: 11px; color: var(--ink-500); font-weight: 500; }
+  .chart-bar.active .day { color: var(--ink-900); font-weight: 700; }
+
+  /* Summary tiles */
+  .summary-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+  }
+  .summary-tile {
+    background: var(--bg-card);
+    border-radius: var(--r-md);
+    padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+    box-shadow: var(--shadow-card);
+  }
+  .summary-tile .lbl { font-size: 10px; color: var(--ink-500); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+  .summary-tile .val { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .summary-tile .sub { font-size: 10px; color: var(--good); font-weight: 600; }
+
+  /* Achievements */
+  .section-head {
+    display: flex; justify-content: space-between; align-items: center; padding: 0 4px;
+  }
+  .section-head .h { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+  .section-head .more { font-size: 12px; color: var(--ink-500); font-weight: 600; }
+  .achievements {
+    display: flex; gap: 12px; overflow: hidden;
+  }
+  .achievement {
+    flex: 1;
+    background: var(--bg-card);
+    border-radius: var(--r-md);
+    padding: 14px 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+    box-shadow: var(--shadow-card);
+  }
+  .achievement .badge {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--accent); display: flex; align-items: center; justify-content: center;
+  }
+  .achievement.locked .badge { background: var(--bg-soft); }
+  .achievement .name { font-size: 11px; font-weight: 600; line-height: 1.3; }
+  .achievement.locked .name { color: var(--ink-400); }
+
+  /* ---------- Bottom Tab Bar (390 × 84) ---------- */
+  /* Figma: Frame "TabBar" — Auto Layout: Horizontal, padding 8 24 24, gap 0, space-around */
+  .tab-bar {
+    height: 84px;
+    background: var(--bg-card);
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding: 12px 16px 24px;
+    border-top: 1px solid var(--bg-soft);
+    flex-shrink: 0;
+  }
+  .tab {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: var(--ink-400);
+    flex: 1;
+  }
+  .tab .label { font-size: 10px; font-weight: 600; }
+  .tab.active { color: var(--ink-900); }
+  .tab.active .label { color: var(--ink-900); }
+
+  /* ---------- Helpers ---------- */
+  .scroll-fade {
+    position: absolute; left: 0; right: 0; bottom: 84px; height: 24px;
+    background: linear-gradient(to bottom, transparent, var(--bg-screen));
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">
+  <h1>Personal Fitness Tracker</h1>
+  <p>3 screens · 390×844 · class names mirror Figma layer names</p>
+</div>
+
+<div class="screens">
+
+  <!-- =========================================================
+       SCREEN 1 — DASHBOARD
+       Figma: Frame "Screen / Dashboard"
+       ========================================================= -->
+  <section class="frame" aria-label="Screen / Dashboard">
+    <!-- StatusBar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><path d="M1 8.5L4.5 5L8 8L17 1" stroke="#131313" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect x="0" y="3" width="3" height="6" rx="1" fill="#131313"/><rect x="4.5" y="1.5" width="3" height="9" rx="1" fill="#131313"/><rect x="9" y="0" width="3" height="12" rx="1" fill="#131313"/></svg>
+        <svg width="22" height="12" viewBox="0 0 22 12" fill="none"><rect x="0.5" y="0.5" width="18" height="11" rx="2.5" stroke="#131313"/><rect x="2" y="2" width="14" height="8" rx="1" fill="#131313"/><rect x="20" y="4" width="1.5" height="4" rx="0.5" fill="#131313"/></svg>
+      </span>
+    </div>
+
+    <div class="content">
+
+      <!-- Header / Greeting -->
+      <div class="header">
+        <div class="greeting">
+          <div class="label">Tuesday, May 4</div>
+          <div class="name">Hi, Alex</div>
+        </div>
+        <div class="avatar">A</div>
+      </div>
+
+      <!-- Activity Ring Card -->
+      <!-- Figma: Frame "RingCard" — Auto Layout V, padding 24, gap 18 -->
+      <div class="ring-card">
+        <div class="top">
+          <div>
+            <div class="label">Today's activity</div>
+            <div><span class="value">82</span><span class="unit">% of goal</span></div>
+          </div>
+          <div class="pill">On track</div>
+        </div>
+        <div class="ring-row">
+          <svg class="ring-svg" width="100" height="100" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#B6E84A" stroke-width="8" stroke-linecap="round"
+                    stroke-dasharray="264" stroke-dashoffset="48" transform="rotate(-90 50 50)"/>
+            <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/>
+            <circle cx="50" cy="50" r="30" fill="none" stroke="#FFB23F" stroke-width="8" stroke-linecap="round"
+                    stroke-dasharray="188" stroke-dashoffset="60" transform="rotate(-90 50 50)"/>
+            <circle cx="50" cy="50" r="18" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/>
+            <circle cx="50" cy="50" r="18" fill="none" stroke="#4CB783" stroke-width="8" stroke-linecap="round"
+                    stroke-dasharray="113" stroke-dashoffset="20" transform="rotate(-90 50 50)"/>
+          </svg>
+          <div class="ring-stats">
+            <div class="ring-stat-row">
+              <span class="ring-dot" style="background:#B6E84A"></span>
+              <span class="name">Move</span><span class="num">412 / 500 cal</span>
+            </div>
+            <div class="ring-stat-row">
+              <span class="ring-dot" style="background:#FFB23F"></span>
+              <span class="name">Exercise</span><span class="num">28 / 45 min</span>
+            </div>
+            <div class="ring-stat-row">
+              <span class="ring-dot" style="background:#4CB783"></span>
+              <span class="name">Stand</span><span class="num">9 / 12 hrs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <!-- Figma: Frame "QuickStats" — Grid 2×2, gap 12 -->
+      <div class="quick-stats">
+        <div class="stat-tile">
+          <div class="stat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 14V8h2v6M9 14V4h2v10M3 14h10" stroke="#1F2A0A" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <div class="stat-label">Steps</div>
+          <div class="stat-value">8,432</div>
+          <div class="stat-sub">+12% vs yesterday</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1c-1.5 2-4 3.5-4 7a4 4 0 008 0c0-3-1.5-4.5-4-7z" stroke="#1F2A0A" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="stat-label">Calories</div>
+          <div class="stat-value">412</div>
+          <div class="stat-sub">+8% vs yesterday</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#1F2A0A" stroke-width="1.5"/><path d="M8 4v4l2.5 1.5" stroke="#1F2A0A" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="stat-label">Active min</div>
+          <div class="stat-value">28</div>
+          <div class="stat-sub">+4 vs yesterday</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l3 3 7-7M9 13l3-3" stroke="#1F2A0A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="stat-label">Distance</div>
+          <div class="stat-value">5.2 km</div>
+          <div class="stat-sub">+0.6 vs yesterday</div>
+        </div>
+      </div>
+
+      <!-- Today's Workout -->
+      <!-- Figma: Frame "WorkoutCard" — Auto Layout V, padding 20, gap 14 -->
+      <div class="card workout-card">
+        <div class="row">
+          <div class="thumb">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M6 8v8M18 8v8M3 11v2M21 11v2M6 12h12" stroke="#1F2A0A" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="info">
+            <div class="small">Today's workout</div>
+            <div class="title">Upper Body Strength</div>
+            <div class="meta">35 min · 6 exercises · Intermediate</div>
+          </div>
+          <div class="start-btn">Start</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TabBar -->
+    <div class="tab-bar">
+      <div class="tab active">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8v10a1 1 0 01-1 1h-5v-7h-6v7H4a1 1 0 01-1-1V11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span class="label">Home</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="label">Habits</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="label">Progress</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="label">Profile</span>
+      </div>
+    </div>
+
+    <div class="frame-label">01 · Dashboard</div>
+  </section>
+
+
+  <!-- =========================================================
+       SCREEN 2 — HEALTHY HABITS
+       Figma: Frame "Screen / Habits"
+       ========================================================= -->
+  <section class="frame" aria-label="Screen / Habits">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><path d="M1 8.5L4.5 5L8 8L17 1" stroke="#131313" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect x="0" y="3" width="3" height="6" rx="1" fill="#131313"/><rect x="4.5" y="1.5" width="3" height="9" rx="1" fill="#131313"/><rect x="9" y="0" width="3" height="12" rx="1" fill="#131313"/></svg>
+        <svg width="22" height="12" viewBox="0 0 22 12" fill="none"><rect x="0.5" y="0.5" width="18" height="11" rx="2.5" stroke="#131313"/><rect x="2" y="2" width="14" height="8" rx="1" fill="#131313"/><rect x="20" y="4" width="1.5" height="4" rx="0.5" fill="#131313"/></svg>
+      </span>
+    </div>
+
+    <div class="content">
+
+      <!-- Header -->
+      <div class="header">
+        <div class="title">Habits</div>
+        <div class="icon-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#131313" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+
+      <!-- Date Strip -->
+      <!-- Figma: Frame "DateStrip" — Auto Layout H, gap 8 -->
+      <div class="date-strip">
+        <div class="date-pill"><div class="dow">Sun</div><div class="day">28</div></div>
+        <div class="date-pill"><div class="dow">Mon</div><div class="day">29</div></div>
+        <div class="date-pill"><div class="dow">Tue</div><div class="day">30</div></div>
+        <div class="date-pill"><div class="dow">Wed</div><div class="day">1</div></div>
+        <div class="date-pill"><div class="dow">Thu</div><div class="day">2</div></div>
+        <div class="date-pill"><div class="dow">Fri</div><div class="day">3</div></div>
+        <div class="date-pill active"><div class="dow">Sat</div><div class="day">4</div><div class="dot"></div></div>
+      </div>
+
+      <!-- Streak Banner -->
+      <!-- Figma: Frame "StreakBanner" — fill accent, radius 24 -->
+      <div class="streak-banner">
+        <div class="flame">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3c-2 4-6 6-6 11a6 6 0 0012 0c0-3-2-5-3-7-1.5 2-3 1-3-4z" fill="#B6E84A"/></svg>
+        </div>
+        <div class="text">
+          <div class="num">12-day streak</div>
+          <div class="label">Keep going — your best is 18 days</div>
+        </div>
+      </div>
+
+      <!-- Habit List -->
+      <!-- Figma: Frame "HabitList" — Auto Layout V, gap 10 -->
+      <div class="habit-list">
+
+        <div class="habit-row done">
+          <div class="habit-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3c-3 5-7 7-7 12a7 7 0 0014 0c0-5-4-7-7-12z" stroke="#1F2A0A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="habit-info">
+            <div class="name">Drink 2L water</div>
+            <div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
+            <div class="meta">8 / 8 glasses · 12-day streak</div>
+          </div>
+          <div class="habit-check done">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+        <div class="habit-row done">
+          <div class="habit-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#1F2A0A" stroke-width="1.6"/><circle cx="12" cy="12" r="8" stroke="#1F2A0A" stroke-width="1.6"/></svg>
+          </div>
+          <div class="habit-info">
+            <div class="name">Meditate 10 min</div>
+            <div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
+            <div class="meta">10 / 10 min · 6-day streak</div>
+          </div>
+          <div class="habit-check done">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+        <div class="habit-row">
+          <div class="habit-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 14V8h2v6M9 14V4h2v10M13 14V10h2v4M3 14h14" stroke="#1F2A0A" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <div class="habit-info">
+            <div class="name">Walk 10,000 steps</div>
+            <div class="progress-track"><div class="progress-fill" style="width:84%"></div></div>
+            <div class="meta">8,432 / 10,000 steps</div>
+          </div>
+          <div class="habit-check"></div>
+        </div>
+
+        <div class="habit-row">
+          <div class="habit-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16v3H4zM4 14h16v3H4z" stroke="#1F2A0A" stroke-width="1.6"/></svg>
+          </div>
+          <div class="habit-info">
+            <div class="name">Read 20 pages</div>
+            <div class="progress-track"><div class="progress-fill" style="width:60%"></div></div>
+            <div class="meta">12 / 20 pages · 4-day streak</div>
+          </div>
+          <div class="habit-check"></div>
+        </div>
+
+        <div class="habit-row">
+          <div class="habit-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12c0-4 3-7 7-7 0 4 3 7 7 7 0 4-3 7-7 7-4 0-7-3-7-7z" stroke="#1F2A0A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="habit-info">
+            <div class="name">Sleep 8 hours</div>
+            <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
+            <div class="meta">Not started · best 9-day streak</div>
+          </div>
+          <div class="habit-check"></div>
+        </div>
+
+        <div class="add-habit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#9A9A9A" stroke-width="2" stroke-linecap="round"/></svg>
+          Add new habit
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TabBar -->
+    <div class="tab-bar">
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8v10a1 1 0 01-1 1h-5v-7h-6v7H4a1 1 0 01-1-1V11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span class="label">Home</span>
+      </div>
+      <div class="tab active">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="label">Habits</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="label">Progress</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="label">Profile</span>
+      </div>
+    </div>
+
+    <div class="frame-label">02 · Healthy Habits</div>
+  </section>
+
+
+  <!-- =========================================================
+       SCREEN 3 — PROGRESS
+       Figma: Frame "Screen / Progress"
+       ========================================================= -->
+  <section class="frame" aria-label="Screen / Progress">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><path d="M1 8.5L4.5 5L8 8L17 1" stroke="#131313" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect x="0" y="3" width="3" height="6" rx="1" fill="#131313"/><rect x="4.5" y="1.5" width="3" height="9" rx="1" fill="#131313"/><rect x="9" y="0" width="3" height="12" rx="1" fill="#131313"/></svg>
+        <svg width="22" height="12" viewBox="0 0 22 12" fill="none"><rect x="0.5" y="0.5" width="18" height="11" rx="2.5" stroke="#131313"/><rect x="2" y="2" width="14" height="8" rx="1" fill="#131313"/><rect x="20" y="4" width="1.5" height="4" rx="0.5" fill="#131313"/></svg>
+      </span>
+    </div>
+
+    <div class="content">
+
+      <!-- Header -->
+      <div class="header">
+        <div class="title">Progress</div>
+        <div class="icon-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-5-5M11 18a7 7 0 100-14 7 7 0 000 14z" stroke="#131313" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+
+      <!-- Segmented Control -->
+      <!-- Figma: Component "Segmented" — pill, 3 options -->
+      <div class="segmented">
+        <div class="seg">Day</div>
+        <div class="seg active">Week</div>
+        <div class="seg">Month</div>
+      </div>
+
+      <!-- Chart Card -->
+      <!-- Figma: Frame "ChartCard" — Auto Layout V, padding 22 20 18 -->
+      <div class="card chart-card">
+        <div class="title-row">
+          <div>
+            <div class="label">This week's calories</div>
+            <div class="value">2,847</div>
+          </div>
+          <div class="delta">+18%</div>
+        </div>
+        <div class="chart-bars">
+          <div class="chart-bar"><div class="bar" style="height:42%"></div><div class="day">M</div></div>
+          <div class="chart-bar"><div class="bar" style="height:68%"></div><div class="day">T</div></div>
+          <div class="chart-bar"><div class="bar" style="height:34%"></div><div class="day">W</div></div>
+          <div class="chart-bar"><div class="bar" style="height:78%"></div><div class="day">T</div></div>
+          <div class="chart-bar"><div class="bar" style="height:55%"></div><div class="day">F</div></div>
+          <div class="chart-bar active"><div class="bar" style="height:92%"></div><div class="day">S</div></div>
+          <div class="chart-bar"><div class="bar" style="height:48%"></div><div class="day">S</div></div>
+        </div>
+      </div>
+
+      <!-- Summary Tiles -->
+      <!-- Figma: Frame "SummaryGrid" — Auto Layout H, gap 8 -->
+      <div class="summary-grid">
+        <div class="summary-tile">
+          <div class="lbl">Avg / day</div>
+          <div class="val">407</div>
+          <div class="sub">+12%</div>
+        </div>
+        <div class="summary-tile">
+          <div class="lbl">Best day</div>
+          <div class="val">612</div>
+          <div class="sub">Saturday</div>
+        </div>
+        <div class="summary-tile">
+          <div class="lbl">Active</div>
+          <div class="val">6 / 7</div>
+          <div class="sub">days</div>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="section-head">
+        <div class="h">Achievements</div>
+        <div class="more">See all</div>
+      </div>
+      <div class="achievements">
+        <div class="achievement">
+          <div class="badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.5L12 16l-5 2.3 1-5.5-4-4 5.5-.8L12 3z" fill="#1F2A0A"/></svg>
+          </div>
+          <div class="name">7-day streak</div>
+        </div>
+        <div class="achievement">
+          <div class="badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 14V8h2v6M9 14V4h2v10M13 14V10h2v4M3 14h14" stroke="#1F2A0A" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="name">10K steps</div>
+        </div>
+        <div class="achievement locked">
+          <div class="badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="#9A9A9A" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="#9A9A9A" stroke-width="1.8"/></svg>
+          </div>
+          <div class="name">30-day streak</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TabBar -->
+    <div class="tab-bar">
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8v10a1 1 0 01-1 1h-5v-7h-6v7H4a1 1 0 01-1-1V11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span class="label">Home</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="label">Habits</span>
+      </div>
+      <div class="tab active">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="label">Progress</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="label">Profile</span>
+      </div>
+    </div>
+
+    <div class="frame-label">03 · Progress</div>
+  </section>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Content Block Component</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- Design tokens (from Figma file: Publisher Onboarding) ---------- */
+  :root {
+    --brand: #0957d1;
+    --brand-50: #e4ecff;
+    --brand-100: #bed1fa;
+    --text: #333333;
+    --text-weak: #898fa2;
+    --border: #dcdfe7;
+    --bg-front: #f4f6f8;
+    --grey-50: #f4f6f8;
+    --green-bg: #cdfbd4;
+    --purple-bg: #e2d5f6;
+    --red-700: #ca261b;
+
+    --r-sm: 4px;
+    --r-md: 6px;
+    --r-lg: 8px;
+
+    --s-xs: 4px;
+    --s-sm: 8px;
+    --s-md: 16px;
+    --s-lg: 24px;
+
+    --font: "Open Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    color: var(--text);
+    background: var(--bg-front);
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    line-height: 22px;
+    padding: 32px;
+  }
+  a { color: var(--brand); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* =================== CONTENT BLOCK COMPONENT =================== */
+  .content-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-md);
+    width: 611px;
+    max-width: 100%;
+  }
+
+  /* ---------- Label ---------- */
+  .cb-label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-xs);
+  }
+  .cb-label .title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 22px;
+    color: var(--text);
+  }
+  .cb-label .title .req { color: var(--red-700); margin-left: 2px; }
+  .cb-label .desc {
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--text);
+  }
+
+  /* ---------- Pill-style checkboxes ---------- */
+  .cb-pills {
+    display: flex;
+    gap: var(--s-sm);
+    flex-wrap: wrap;
+  }
+  .cb-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    transition: background .12s ease;
+  }
+  .cb-pill .inner {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-sm);
+    padding: 8px var(--s-md);
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    font-size: 12px;
+    line-height: 20px;
+    color: #000;
+  }
+  .cb-pill input { position: absolute; opacity: 0; pointer-events: none; }
+  .cb-pill .box {
+    width: 16px; height: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .cb-pill .box svg { width: 10px; height: 10px; color: #fff; opacity: 0; }
+  .cb-pill:hover .inner { background: var(--grey-50); }
+  .cb-pill.checked { background: var(--brand-100); }
+  .cb-pill.checked .inner {
+    background: var(--brand-50);
+    border-color: var(--brand);
+  }
+  .cb-pill.checked .box { background: var(--brand); border-color: var(--brand); }
+  .cb-pill.checked .box svg { opacity: 1; }
+
+  /* ---------- Upload list ---------- */
+  .cb-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+  .cb-list:empty { display: none; }
+  .cb-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-md);
+    padding: var(--s-md);
+    border: 1px solid var(--border);
+    margin-bottom: -1px;
+    background: #fff;
+  }
+  .cb-list .cb-row:first-child {
+    border-top-left-radius: var(--r-lg);
+    border-top-right-radius: var(--r-lg);
+  }
+  .cb-list .cb-row:last-child {
+    border-bottom-left-radius: var(--r-lg);
+    border-bottom-right-radius: var(--r-lg);
+  }
+
+  .cb-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--s-md);
+    min-width: 0;
+    flex: 1;
+  }
+  .cb-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--r-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .cb-icon svg { width: 22px; height: 22px; }
+  .cb-icon.bcat  { background: var(--brand-50); color: var(--brand); }
+  .cb-icon.badv  { background: var(--green-bg); color: #0e7d22; }
+  .cb-icon.battr { background: var(--purple-bg); color: #6b3fa0; }
+
+  .cb-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .cb-text .name {
+    font-size: 14px;
+    line-height: 22px;
+    color: #000;
+    font-weight: 400;
+  }
+  .cb-text .sample {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--brand);
+    font-weight: 600;
+    width: fit-content;
+  }
+  .cb-text .sample svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .cb-text .sample:hover { text-decoration: underline; }
+
+  .cb-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-sm);
+    padding: 8px var(--s-md);
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 20px;
+    height: 38px;
+    flex-shrink: 0;
+  }
+  .cb-upload-btn:hover { background: var(--grey-50); }
+  .cb-upload-btn svg { width: 18px; height: 18px; color: var(--text); }
+
+  .cb-format-note {
+    padding: var(--s-md);
+    border: 1px solid var(--border);
+    margin-bottom: -1px;
+    border-bottom-left-radius: var(--r-lg);
+    border-bottom-right-radius: var(--r-lg);
+    color: var(--text);
+    font-size: 12px;
+    line-height: 20px;
+    background: #fff;
+  }
+</style>
+</head>
+<body>
+
+  <!-- =================== CONTENT BLOCK COMPONENT =================== -->
+  <div class="content-block" id="contentBlock" data-component="content-block">
+    <div class="cb-label">
+      <span class="title">Content Blocks<span class="req">*</span></span>
+      <span class="desc">Select the block types you'd like to configure. You can upload a spreadsheet for each.</span>
+    </div>
+
+    <div class="cb-pills" role="group" aria-label="Content block categories">
+      <label class="cb-pill checked" data-category="bcat">
+        <input type="checkbox" checked />
+        <span class="inner">
+          <span class="box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <span>IAB Categories (bcat)</span>
+        </span>
+      </label>
+      <label class="cb-pill checked" data-category="badv">
+        <input type="checkbox" checked />
+        <span class="inner">
+          <span class="box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <span>Blocked Domains (badv)</span>
+        </span>
+      </label>
+      <label class="cb-pill checked" data-category="battr">
+        <input type="checkbox" checked />
+        <span class="inner">
+          <span class="box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <span>Ad Attributes (battr)</span>
+        </span>
+      </label>
+    </div>
+
+    <!-- Upload rows render here, one per selected category -->
+    <div class="cb-list" id="uploadList">
+      <!-- ===== bcat ===== -->
+      <div class="cb-row" data-row="bcat">
+        <div class="cb-meta">
+          <span class="cb-icon bcat" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </span>
+          <div class="cb-text">
+            <span class="name">Blocked IAB Categories (bcat)</span>
+            <a class="sample" href="/samples/bcat-sample.csv" download>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download sample format
+            </a>
+          </div>
+        </div>
+        <button class="cb-upload-btn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload CSV/XLSX
+        </button>
+      </div>
+
+      <!-- ===== badv ===== -->
+      <div class="cb-row" data-row="badv">
+        <div class="cb-meta">
+          <span class="cb-icon badv" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+          <div class="cb-text">
+            <span class="name">Blocked Domains (badv)</span>
+            <a class="sample" href="/samples/badv-sample.csv" download>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download sample format
+            </a>
+          </div>
+        </div>
+        <button class="cb-upload-btn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload CSV/XLSX
+        </button>
+      </div>
+
+      <!-- ===== battr ===== -->
+      <div class="cb-row" data-row="battr">
+        <div class="cb-meta">
+          <span class="cb-icon battr" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </span>
+          <div class="cb-text">
+            <span class="name">Blocked Ad Attributes (battr)</span>
+            <a class="sample" href="/samples/battr-sample.csv" download>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download sample format
+            </a>
+          </div>
+        </div>
+        <button class="cb-upload-btn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload CSV/XLSX
+        </button>
+      </div>
+
+      <div class="cb-format-note" id="formatNote">
+        Supported formats: CSV or XLSX. Maximum file size: 20MB.
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Toggle category checkboxes and the matching upload row.
+  // The Sample Format link lives inside each row, so it appears/disappears with its row.
+  (function () {
+    const block = document.getElementById('contentBlock');
+    const list  = document.getElementById('uploadList');
+    if (!block || !list) return;
+
+    function syncRow(category, on) {
+      const row = list.querySelector('[data-row="' + category + '"]');
+      if (!row) return;
+      row.style.display = on ? '' : 'none';
+    }
+
+    function syncFormatNote() {
+      const visible = Array.from(list.querySelectorAll('.cb-row')).filter(r => r.style.display !== 'none');
+      const note = document.getElementById('formatNote');
+      note.style.display = visible.length === 0 ? 'none' : '';
+    }
+
+    block.querySelectorAll('.cb-pill').forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        e.preventDefault();
+        const input = pill.querySelector('input');
+        input.checked = !input.checked;
+        pill.classList.toggle('checked', input.checked);
+        syncRow(pill.dataset.category, input.checked);
+        syncFormatNote();
+      });
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ad Group — Kebab Menu Redesign</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --brand: #0957D1;
+        --brand-50: #EEF2FF;
+        --violet-50: #F3F0FF;
+        --violet-600: #6D28D9;
+        --ring: rgba(9, 87, 209, 0.12);
+      }
+      body {
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: #F7F8FA;
+      }
+      .card-shadow { box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 0 0 1px rgba(16, 24, 40, 0.06); }
+      .menu-shadow { box-shadow: 0 12px 32px -8px rgba(16, 24, 40, 0.18), 0 0 0 1px rgba(16, 24, 40, 0.06); }
+      .chip-violet { background: var(--violet-50); color: var(--violet-600); }
+      .kbd {
+        font: 500 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: #6B7280;
+        background: #F3F4F6;
+        border: 1px solid #E5E7EB;
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 2px 5px;
+      }
+      .menu-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 10px; border-radius: 6px;
+        font-size: 13.5px; color: #111827;
+        cursor: pointer; user-select: none;
+      }
+      .menu-item:hover { background: #F3F4F6; }
+      .menu-item .right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+      .menu-item.destructive { color: #DC2626; }
+      .menu-item.destructive:hover { background: #FEF2F2; }
+      .menu-item .ic { width: 16px; height: 16px; flex: none; color: #6B7280; }
+      .menu-item.destructive .ic { color: #DC2626; }
+      .section-label {
+        font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+        color: #6B7280; text-transform: uppercase;
+        padding: 8px 10px 4px;
+      }
+      .divider { height: 1px; background: #EEF0F3; margin: 4px 0; }
+
+      .dot-btn {
+        width: 32px; height: 32px; border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #6B7280;
+      }
+      .dot-btn:hover { background: #F3F4F6; color: #111827; }
+      .dot-btn.active { background: #EEF2FF; color: var(--brand); }
+
+      .pill {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 11px; font-weight: 600;
+        padding: 3px 8px; border-radius: 999px;
+      }
+      .pill-success { background: #ECFDF5; color: #047857; }
+      .pill-paused  { background: #FEF3C7; color: #B45309; }
+
+      .field-label { font-size: 13px; font-weight: 600; color: #111827; }
+      .field-input {
+        height: 40px; border: 1px solid #E5E7EB; border-radius: 8px;
+        background: #fff; padding: 0 12px; font-size: 14px; color: #111827;
+        width: 100%;
+      }
+      .field-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px var(--ring); }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <div class="max-w-[1240px] mx-auto px-8 py-10">
+      <header class="mb-8">
+        <div class="text-[12px] uppercase tracking-wider text-gray-500 font-semibold">Select DS · Pattern</div>
+        <h1 class="text-2xl font-semibold text-gray-900 mt-1">Ad Group · Kebab menu</h1>
+        <p class="text-sm text-gray-500 mt-1">Improved overflow actions. Grouped, scannable, with a clear destructive zone.</p>
+      </header>
+
+      <!-- ============ MAIN CARD WITH OPEN MENU ============ -->
+      <section class="relative bg-white card-shadow rounded-xl p-6 mb-12">
+        <!-- Header row -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h2 class="text-[17px] font-semibold text-gray-900">Ad Group 1</h2>
+            <span class="chip-violet text-[12px] font-medium px-2 py-[3px] rounded-md">Total Variations: <span class="font-semibold ml-0.5">9</span></span>
+            <span class="pill pill-success"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>
+          </div>
+          <div class="flex items-center gap-1 relative">
+            <button class="dot-btn active" aria-haspopup="menu" aria-expanded="true" id="kebabBtn" title="More actions">
+              <!-- vertical dots -->
+              <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="5" r="1.4" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.4" fill="currentColor"/>
+                <circle cx="12" cy="19" r="1.4" fill="currentColor"/>
+              </svg>
+            </button>
+            <button class="dot-btn" title="Collapse">
+              <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
+            </button>
+
+            <!-- ===== DROPDOWN MENU ===== -->
+            <div class="absolute right-0 top-10 w-[260px] bg-white menu-shadow rounded-xl p-1.5 z-20" role="menu" id="kebabMenu">
+              <!-- Group: Edit -->
+              <div class="section-label">Edit</div>
+              <div class="menu-item" role="menuitem">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                Rename
+                <span class="right"><span class="kbd">R</span></span>
+              </div>
+              <div class="menu-item" role="menuitem">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Duplicate
+                <span class="right"><span class="kbd">⌘D</span></span>
+              </div>
+              <div class="menu-item" role="menuitem">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+                Move to campaign…
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Group: Status -->
+              <div class="section-label">Status</div>
+              <div class="menu-item" role="menuitem">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+                Pause ad group
+              </div>
+              <div class="menu-item" role="menuitem">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/></svg>
+                Archive
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Group: Danger -->
+              <div class="menu-item destructive" role="menuitem">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6 17.6 20a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+                Delete
+                <span class="right"><span class="kbd" style="color:#DC2626;background:#FEF2F2;border-color:#FECACA">⌫</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form fields -->
+        <div class="grid grid-cols-2 gap-6 mt-7">
+          <div>
+            <label class="field-label flex items-center gap-1.5">Ad Group Name
+              <svg class="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 1 1 5.8 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+            </label>
+            <input class="field-input mt-2" value="Hero Sale Q1" />
+          </div>
+          <div>
+            <label class="field-label">Ad Rotation Strategy</label>
+            <div class="field-input mt-2 flex items-center justify-between">
+              <span>Conversion Optimization</span>
+              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-7 flex items-center gap-2 text-sm">
+          <span class="font-semibold text-gray-900">Ad Variations</span>
+          <span class="chip-violet text-[11px] font-medium px-2 py-[2px] rounded-md">9</span>
+        </div>
+      </section>
+
+      <!-- ============ COMPARISON: BEFORE / AFTER ============ -->
+      <section class="grid grid-cols-2 gap-6 mb-12">
+        <!-- BEFORE -->
+        <div>
+          <div class="text-[12px] uppercase tracking-wider text-gray-500 font-semibold mb-2">Before</div>
+          <div class="bg-white card-shadow rounded-xl p-5 relative h-[260px]">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-[15px] font-semibold">Ad Group 1</span>
+                <span class="chip-violet text-[11px] font-medium px-2 py-[2px] rounded-md">Total Variations: 9</span>
+              </div>
+              <div class="dot-btn active">
+                <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="19" r="1.4" fill="currentColor"/></svg>
+              </div>
+            </div>
+            <div class="absolute right-5 top-14 w-[200px] bg-white menu-shadow rounded-lg p-1.5">
+              <div class="menu-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</div>
+              <div class="menu-item destructive"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6 17.6 20a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8L5 6"/></svg>Delete</div>
+            </div>
+          </div>
+          <ul class="text-[12.5px] text-gray-600 mt-3 space-y-1 list-disc pl-4">
+            <li>Only 2 actions — common needs force users into the form</li>
+            <li>No status control, no move, no archive</li>
+            <li>Destructive sits adjacent to safe action with no separator</li>
+          </ul>
+        </div>
+
+        <!-- AFTER -->
+        <div>
+          <div class="text-[12px] uppercase tracking-wider text-gray-500 font-semibold mb-2">After</div>
+          <div class="bg-white card-shadow rounded-xl p-5 relative h-[260px] overflow-visible">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-[15px] font-semibold">Ad Group 1</span>
+                <span class="chip-violet text-[11px] font-medium px-2 py-[2px] rounded-md">Total Variations: 9</span>
+                <span class="pill pill-success"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>
+              </div>
+              <div class="dot-btn active">
+                <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="19" r="1.4" fill="currentColor"/></svg>
+              </div>
+            </div>
+            <div class="absolute right-5 top-14 w-[240px] bg-white menu-shadow rounded-xl p-1.5">
+              <div class="section-label">Edit</div>
+              <div class="menu-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>Rename</div>
+              <div class="menu-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</div>
+              <div class="menu-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>Move to campaign…</div>
+              <div class="divider"></div>
+              <div class="section-label">Status</div>
+              <div class="menu-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>Pause ad group</div>
+              <div class="menu-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/></svg>Archive</div>
+              <div class="divider"></div>
+              <div class="menu-item destructive"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6 17.6 20a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8L5 6"/></svg>Delete</div>
+            </div>
+          </div>
+          <ul class="text-[12.5px] text-gray-600 mt-3 space-y-1 list-disc pl-4">
+            <li>Grouped <em>Edit</em> / <em>Status</em> / destructive — easy to scan</li>
+            <li>Move + Archive cover most real workflows beyond duplicate</li>
+            <li>Keyboard hints (⌘D, R, ⌫) for power users</li>
+            <li>Delete isolated below a divider with red treatment</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============ SPEC ============ -->
+      <section class="bg-white card-shadow rounded-xl p-6">
+        <h3 class="text-[15px] font-semibold text-gray-900 mb-4">Spec</h3>
+        <div class="grid grid-cols-3 gap-x-8 gap-y-4 text-[13px]">
+          <div>
+            <div class="text-gray-500 mb-1">Menu width</div>
+            <div class="text-gray-900 font-medium">260 px</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">Item height</div>
+            <div class="text-gray-900 font-medium">32 px (8px vertical padding)</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">Radius</div>
+            <div class="text-gray-900 font-medium">Menu 12 · Item 6</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">Icon</div>
+            <div class="text-gray-900 font-medium">16 px · gray-500 · red-600 for destructive</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">Section label</div>
+            <div class="text-gray-900 font-medium">11 px / 600 / uppercase / gray-500</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">Divider</div>
+            <div class="text-gray-900 font-medium">1 px · #EEF0F3 · 4 px margin</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">Hover</div>
+            <div class="text-gray-900 font-medium">bg gray-100 · red-50 for destructive</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">Shadow</div>
+            <div class="text-gray-900 font-medium">0 12 32 -8 rgba(16,24,40,.18) + 1px hairline</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">Keyboard</div>
+            <div class="text-gray-900 font-medium">↑ ↓ navigate · ↵ activate · esc close</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

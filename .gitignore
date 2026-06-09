@@ -1,0 +1,12 @@
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+*.log
+
+# Local Claude state — keep launch.json which is project config, ignore session noise
+.claude/projects/
+.claude/sessions/
+.claude/tool-results/
+.claude/transcripts/
+.claude/settings.local.json
