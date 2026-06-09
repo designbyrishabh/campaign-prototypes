@@ -1387,6 +1387,14 @@
     window.addEventListener("pointercancel", onPointerUp);
   }
 
+  window.__demo = { setAdj: (d,h,dir,pct)=>{ adj[d][h] = {dir,pct}; }, setMode: m=>{ mode=m; }, render };
+  if (new URLSearchParams(location.search).get('demo') === '1') {
+    for (let day = 1; day <= 5; day++) { for (let h = 9; h <= 17; h++) adj[day][h] = {dir:'inc',pct:25}; }
+    for (const day of [0,6]) { for (let h = 12; h <= 20; h++) adj[day][h] = {dir:'inc',pct:10}; }
+    for (let day = 1; day <= 5; day++) { for (const h of [23,0,1,2,3,4,5]) adj[day][h] = {dir:'dec',pct:15}; }
+    mode = 'adjust';
+    setTimeout(render, 0);
+  }
   modeScheduleBtn.addEventListener("click", () => { mode = "schedule"; closePopup(); render(); });
   modeAdjustBtn.addEventListener("click",   () => { mode = "adjust";   closePopup(); render(); });
 
