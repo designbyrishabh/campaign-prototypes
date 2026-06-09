@@ -60,13 +60,7 @@
   }
 
   /* Header */
-  .head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-  }
-  .head .title-block { min-width: 0; flex: 1; }
+  .head { display: block; }
   .head .title {
     font-size: 16px;
     font-weight: 600;
@@ -79,11 +73,25 @@
     color: var(--text-sec);
     margin: 0;
   }
-  .head-actions {
+
+  /* Bottom controls row (legend + save status + reset) */
+  .bottom-bar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .bottom-bar .end {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
     flex-shrink: 0;
+  }
+  .bottom-bar .divider {
+    width: 1px;
+    height: 14px;
+    background: var(--border);
   }
   .reset-link {
     display: inline-flex;
@@ -559,27 +567,10 @@
   <div class="wrap">
     <section class="card" id="card">
       <div class="card-body">
-        <!-- Header -->
+        <!-- Header (identity only) -->
         <div class="head">
-          <div class="title-block">
-            <h3 class="title">Bid Adjustments</h3>
-            <p class="sub" id="sub">Tap hours to opt them out. Switch to Edit Bid to fine-tune the bid for scheduled hours.</p>
-          </div>
-          <div class="head-actions">
-            <span class="save-status saved" id="status" aria-live="polite">
-              <span class="ss-dot"></span>
-              <span id="status-text">All changes saved</span>
-            </span>
-            <button class="reset-link" id="reset" disabled title="Restore to all hours active">
-              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="M3.33 10A6.67 6.67 0 0 1 15 5.43" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M16.67 10A6.67 6.67 0 0 1 5 14.57" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M15.5 3v2.5H13"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M4.5 17v-2.5H7"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Reset
-            </button>
-          </div>
+          <h3 class="title">Bid Adjustments</h3>
+          <p class="sub" id="sub">Tap hours to opt them out. Switch to Edit Bid to fine-tune the bid for scheduled hours.</p>
         </div>
 
         <!-- Mode toggle -->
@@ -600,12 +591,30 @@
           <div class="grid" id="grid"></div>
         </div>
 
-        <!-- Legend -->
-        <div class="legend">
-          <div class="legend-item"><span class="legend-dot"></span>Active (Regular bid)</div>
-          <div class="legend-item"><span class="legend-dot inc"></span>Increased</div>
-          <div class="legend-item"><span class="legend-dot dec"></span>Decreased</div>
-          <div class="legend-item"><span class="legend-dot inactive"></span>Inactive</div>
+        <!-- Bottom bar: legend (start) + save status + reset (end) -->
+        <div class="bottom-bar">
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot"></span>Active (Regular bid)</div>
+            <div class="legend-item"><span class="legend-dot inc"></span>Increased</div>
+            <div class="legend-item"><span class="legend-dot dec"></span>Decreased</div>
+            <div class="legend-item"><span class="legend-dot inactive"></span>Inactive</div>
+          </div>
+          <div class="end">
+            <span class="save-status saved" id="status" aria-live="polite">
+              <span class="ss-dot"></span>
+              <span id="status-text">All changes saved</span>
+            </span>
+            <span class="divider" aria-hidden="true"></span>
+            <button class="reset-link" id="reset" disabled title="Restore to all hours active">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M3.33 10A6.67 6.67 0 0 1 15 5.43" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16.67 10A6.67 6.67 0 0 1 5 14.57" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M15.5 3v2.5H13"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4.5 17v-2.5H7"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Reset
+            </button>
+          </div>
         </div>
       </div>
 
