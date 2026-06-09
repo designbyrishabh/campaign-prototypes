@@ -364,12 +364,12 @@
     transition: background-color .12s, border-color .12s;
   }
   .adj-outline.inc {
-    border-color: color-mix(in srgb, var(--green) calc(var(--strength, 1) * 80%), transparent);
-    background:   color-mix(in srgb, var(--green) calc(var(--strength, 1) * 14%), #ffffff);
+    border-color: color-mix(in srgb, var(--green) calc(var(--strength, 1) * 55%), transparent);
+    background:   color-mix(in srgb, var(--green) calc(var(--strength, 1) * 10%), #ffffff);
   }
   .adj-outline.dec {
-    border-color: color-mix(in srgb, var(--red)   calc(var(--strength, 1) * 80%), transparent);
-    background:   color-mix(in srgb, var(--red)   calc(var(--strength, 1) * 14%), #ffffff);
+    border-color: color-mix(in srgb, var(--red)   calc(var(--strength, 1) * 55%), transparent);
+    background:   color-mix(in srgb, var(--red)   calc(var(--strength, 1) * 10%), #ffffff);
   }
 
   /* Badge for percent */
@@ -868,8 +868,10 @@
     }
 
     // Map a percent to a 0..1 strength relative to the current max in that direction.
-    // Floor at 0.35 so the smallest adjustment is still visible against active cells.
-    const STRENGTH_FLOOR = 0.35;
+    // Floor at 0.65 so even the smallest adjustment renders as a clearly-saturated
+    // dot (rather than a washed-out near-white that disappears inside the pill).
+    // Top of the range is reserved for the actual max — those will be ~100%.
+    const STRENGTH_FLOOR = 0.65;
     function strengthFor(pct, max){
       if (!max) return 1;
       const raw = pct / max;
