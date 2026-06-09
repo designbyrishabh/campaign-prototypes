@@ -348,9 +348,15 @@
     transform: scale(1.08);
     box-shadow: 0 0 0 3px rgba(132, 95, 255, 0.15);
   }
-  .mode-adjust .cell:hover .dot {
-    transform: scale(1.08);
+  /* In Adjust Bid, only ACTIVE cells respond to hover/drag. Inactive cells were
+     deselected in Schedule mode and are read-only here: no hover scale, no
+     pointer interaction, and a not-allowed cursor to telegraph it. */
+  .mode-adjust .cell.on:hover .dot { transform: scale(1.08); }
+  .mode-adjust .cell.off {
+    cursor: not-allowed;
+    opacity: 0.65;
   }
+  .mode-adjust .cell.off:hover .dot { transform: none; }
 
   /* Selection (drag) in adjust mode — outlined "marching" pill that hugs the dots */
   .selection-box {
@@ -1089,6 +1095,9 @@
     if (openPopup) return;
     const c = cellFromEvent(e);
     if (!c) return;
+    // In Adjust Bid mode you can only start a drag on an ACTIVE cell. Cells
+    // deselected from the Schedule tab are disabled and read-only here.
+    if (mode === "adjust" && !base[c.d][c.h]) return;
     e.preventDefault();
     // Capture pointer so we keep getting moves even when the cursor leaves the cell.
     try { e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId); } catch(_) {}
@@ -1115,12 +1124,16 @@
     const c = cellFromEvent(e);
     if (!c) return;
     if (c.d === drag.lastD && c.h === drag.lastH) return;
-    drag.lastD = c.d;
-    drag.lastH = c.h;
     if (drag.mode === "schedule-draw") {
+      drag.lastD = c.d; drag.lastH = c.h;
       paintScheduleRange(drag);
       render();
     } else if (drag.mode === "adjust-range") {
+      // Only extend the selection to active cells. The pointer can still travel
+      // over inactive cells (e.g. to reach an active cell beyond them), but the
+      // last *anchor* remains on the most recent active cell visited.
+      if (!base[c.d][c.h]) return;
+      drag.lastD = c.d; drag.lastH = c.h;
       updateSelectionBox();
     }
   }
