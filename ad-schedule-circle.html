@@ -276,6 +276,7 @@
 
   .cell {
     position: relative;
+    z-index: 2;             /* keep dots above the persistent .adj-outline pills (z-index 1) */
     width: var(--hour-w);
     height: var(--row-h);
     display: flex;
