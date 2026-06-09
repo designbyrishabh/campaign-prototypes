@@ -330,12 +330,15 @@
   /* Selection (drag) in adjust mode */
   .selection-box {
     position: absolute;
-    border: 1.5px solid var(--brand);
-    border-radius: 999px;
+    border: 2px solid var(--brand);
+    background: rgba(132, 95, 255, 0.08);
     pointer-events: none;
-    background: transparent;
     z-index: 2;
+    box-shadow: 0 0 0 4px rgba(132, 95, 255, 0.06);
+    transition: border-radius .08s linear;
   }
+  .selection-box.single-row { border-radius: 999px; }
+  .selection-box.multi-row  { border-radius: 18px; }
 
   /* Badge for percent */
   .pct-badge {
@@ -981,28 +984,41 @@
       selBox.className = "selection-box";
       grid.appendChild(selBox);
     }
-    // Anchor on the actual dot bounding rects rather than the cell rect — cells are flex
-    // containers that vertically center the dot inside a 44px row, so cell.top/cell.bottom
-    // don't match the dot edges.
-    const cells = [
-      grid.querySelector(`.cell[data-day="${r.d1}"][data-hour="${r.h1}"]`),
-      grid.querySelector(`.cell[data-day="${r.d1}"][data-hour="${r.h2}"]`),
-      grid.querySelector(`.cell[data-day="${r.d2}"][data-hour="${r.h1}"]`),
-      grid.querySelector(`.cell[data-day="${r.d2}"][data-hour="${r.h2}"]`),
+    // Anchor on the actual dot bounding rects of the four range corners — cells are flex
+    // containers that vertically center the dot in a 44px row, so cell.top/cell.bottom
+    // don't match the dot edges. We compute extents from the dots, then add a symmetric
+    // padding so the box hugs every dot in the rectangle with equal top/bottom/left/right
+    // breathing room.
+    const corners = [
+      grid.querySelector(`.cell[data-day="${r.d1}"][data-hour="${r.h1}"] .dot`),
+      grid.querySelector(`.cell[data-day="${r.d1}"][data-hour="${r.h2}"] .dot`),
+      grid.querySelector(`.cell[data-day="${r.d2}"][data-hour="${r.h1}"] .dot`),
+      grid.querySelector(`.cell[data-day="${r.d2}"][data-hour="${r.h2}"] .dot`),
     ].filter(Boolean);
-    if (cells.length < 2) return;
-    const dots = cells.map(c => c.querySelector(".dot").getBoundingClientRect());
+    if (corners.length < 2) return;
+
+    const dots = corners.map(d => d.getBoundingClientRect());
     const gridRect = grid.getBoundingClientRect();
-    const padX = 6, padY = 6;
-    const left   = Math.min(...dots.map(d => d.left))   - gridRect.left - padX;
-    const right  = Math.max(...dots.map(d => d.right))  - gridRect.left + padX;
-    const top    = Math.min(...dots.map(d => d.top))    - gridRect.top  - padY;
-    const bottom = Math.max(...dots.map(d => d.bottom)) - gridRect.top  + padY;
-    selBox.style.left   = left + "px";
-    selBox.style.top    = top + "px";
-    selBox.style.width  = (right - left) + "px";
-    selBox.style.height = (bottom - top) + "px";
-    selBox.style.borderRadius = ((bottom - top) / 2) + "px";
+    // Symmetric padding on every side. 7px keeps the selection just outside the dot
+    // outline without crowding adjacent rows/columns.
+    const PAD = 7;
+    const left   = Math.min(...dots.map(d => d.left))   - gridRect.left - PAD;
+    const right  = Math.max(...dots.map(d => d.right))  - gridRect.left + PAD;
+    const top    = Math.min(...dots.map(d => d.top))    - gridRect.top  - PAD;
+    const bottom = Math.max(...dots.map(d => d.bottom)) - gridRect.top  + PAD;
+
+    const width  = right - left;
+    const height = bottom - top;
+    selBox.style.left   = left   + "px";
+    selBox.style.top    = top    + "px";
+    selBox.style.width  = width  + "px";
+    selBox.style.height = height + "px";
+
+    // Single-row selection → full pill. Multi-row → consistent rounded rectangle so
+    // wide AND tall selections don't morph into a flat oval.
+    const singleRow = r.d1 === r.d2;
+    selBox.classList.toggle("single-row", singleRow);
+    selBox.classList.toggle("multi-row",  !singleRow);
   }
   function clearSelectionBox(){
     if (selBox) { selBox.remove(); selBox = null; }
